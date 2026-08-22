@@ -1,343 +1,624 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Crown Chess Society | Official Portal</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg-main: #020608;
-      --panel-bg: rgba(7, 16, 23, 0.85);
-      --panel-border: rgba(0, 229, 255, 0.25);
-      --cyan-neon: #00e5ff;
-      --orange-neon: #ff6500;
-      --gold: #facc15;
-      --purple: #a855f7;
-      --text-white: #ffffff;
-      --text-sub: #94a3b8;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    <title>The Crown Chess Society</title>
+    <meta name="description"
+          content="The Crown Chess Society — Play, compete, improve and connect with chess players.">
 
-    body {
-      background-color: var(--bg-main);
-      color: #e2e8f0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-      padding-bottom: 40px;
-    }
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    /* Background Ambient Glows */
-    .ambient-glow-1 {
-      position: fixed; top: -100px; left: 50%; transform: translateX(-50%);
-      width: 600px; height: 300px;
-      background: radial-gradient(circle, rgba(0, 229, 255, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
-      pointer-events: none; z-index: 0;
-    }
-    .ambient-glow-2 {
-      position: fixed; bottom: -100px; right: -100px;
-      width: 500px; height: 500px;
-      background: radial-gradient(circle, rgba(255, 101, 0, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
-      pointer-events: none; z-index: 0;
-    }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
+          rel="stylesheet">
 
-    /* Sticky Navigation Header */
-    nav {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(3, 8, 12, 0.9);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--panel-border);
-      padding: 14px 20px;
-      display: flex; justify-content: space-between; align-items: center;
-    }
-    .nav-brand {
-      display: flex; align-items: center; gap: 10px;
-      text-decoration: none; color: #fff; font-weight: 900; font-size: 16px; letter-spacing: 1px;
-    }
-    .nav-links {
-      display: flex; gap: 16px;
-    }
-    .nav-link {
-      color: var(--text-sub); text-decoration: none; font-size: 12px; font-weight: 700;
-      transition: color 0.3s ease;
-    }
-    .nav-link:hover, .nav-link.active { color: var(--cyan-neon); }
-
-    /* App Wrapper */
-    .app-container {
-      max-width: 520px; margin: 20px auto 0; padding: 0 16px;
-      position: relative; z-index: 1;
-    }
-
-    /* Hero Section */
-    .hero-banner {
-      background: linear-gradient(180deg, rgba(12, 27, 36, 0.9) 0%, rgba(4, 11, 16, 0.95) 100%);
-      border: 1px solid var(--cyan-neon);
-      box-shadow: 0 0 30px rgba(0, 229, 255, 0.15);
-      border-radius: 24px; padding: 32px 20px; text-align: center; margin-bottom: 20px;
-    }
-    .hero-crown { font-size: 54px; line-height: 1; filter: drop-shadow(0 0 16px var(--cyan-neon)); }
-    .hero-title {
-      color: #fff; font-size: 28px; font-weight: 900; letter-spacing: 3px;
-      text-shadow: 0 0 20px rgba(0, 229, 255, 0.6); text-transform: uppercase; margin-top: 10px;
-    }
-    .hero-subtitle {
-      color: var(--cyan-neon); font-size: 11px; font-weight: 800; letter-spacing: 6px; margin-top: 4px;
-    }
-    .hero-divider {
-      height: 1px; margin: 18px auto; width: 80%;
-      background: linear-gradient(90deg, transparent, var(--cyan-neon), var(--orange-neon), transparent);
-    }
-    .hero-motto { color: var(--text-sub); font-size: 11px; font-weight: 700; letter-spacing: 2px; }
-
-    /* Ticker Banner */
-    .ticker-bar {
-      background: rgba(8, 22, 29, 0.8); border: 1px solid rgba(0, 229, 255, 0.2);
-      border-radius: 12px; padding: 8px 12px; margin-bottom: 20px;
-      font-size: 11px; font-weight: 800; color: #a5f3fc;
-    }
-
-    /* Live Counter Section */
-    .live-card {
-      background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 20px; padding: 20px; text-align: center; margin-bottom: 20px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    }
-    .card-label {
-      color: var(--cyan-neon); font-size: 12px; font-weight: 900; letter-spacing: 2px;
-      text-transform: uppercase; margin-bottom: 12px; display: block;
-    }
-    .counter-display {
-      display: inline-block; padding: 8px 24px;
-      background: rgba(0, 229, 255, 0.08); border: 1px solid var(--cyan-neon);
-      border-radius: 12px; font-size: 28px; font-weight: 900; color: #fff;
-      text-shadow: 0 0 14px var(--cyan-neon);
-    }
-
-    /* Action Shortcuts */
-    .shortcuts-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .action-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 14px; border-radius: 14px; text-decoration: none; font-size: 12px;
-      font-weight: 800; letter-spacing: 1px; transition: all 0.3s ease; border: 1px solid;
-    }
-    .btn-members {
-      color: #78efff; background: rgba(10, 30, 38, 0.8); border-color: rgba(0, 229, 255, 0.4);
-    }
-    .btn-members:hover { background: var(--cyan-neon); color: #000; box-shadow: 0 0 20px rgba(0,229,255,0.6); }
-
-    .btn-events {
-      color: #ffae6e; background: rgba(35, 18, 9, 0.8); border-color: rgba(255, 101, 0, 0.4);
-    }
-    .btn-events:hover { background: var(--orange-neon); color: #fff; box-shadow: 0 0 20px rgba(255,101,0,0.6); }
-
-    .btn-discord {
-      color: #d8b4fe; background: rgba(28, 16, 42, 0.8); border-color: rgba(168, 85, 247, 0.4);
-    }
-    .btn-discord:hover { background: var(--purple); color: #fff; box-shadow: 0 0 20px rgba(168,85,247,0.6); }
-
-    /* Content Cards */
-    .content-panel {
-      background: var(--panel-bg); border: 1px solid var(--panel-border);
-      border-radius: 20px; padding: 20px; margin-bottom: 20px;
-    }
-    .panel-header {
-      font-size: 13px; font-weight: 900; color: var(--cyan-neon); letter-spacing: 2px;
-      text-transform: uppercase; margin-bottom: 14px; text-align: center;
-    }
-
-    /* Core Values */
-    .value-box {
-      background: rgba(4, 11, 16, 0.6); border-left: 4px solid var(--cyan-neon);
-      padding: 10px 14px; border-radius: 6px; margin-bottom: 8px;
-    }
-    .value-box.orange { border-left-color: var(--orange-neon); }
-    .value-box.purple { border-left-color: var(--purple); }
-
-    /* Staff Directory */
-    .staff-group-title {
-      font-size: 10px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
-      margin: 14px 0 6px; color: var(--text-sub);
-    }
-    .staff-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .staff-card {
-      background: rgba(11, 24, 32, 0.6); border: 1px solid rgba(0, 229, 255, 0.2);
-      border-left: 3px solid var(--cyan-neon); padding: 10px; border-radius: 8px;
-    }
-    .staff-card.gold { border-left-color: var(--gold); }
-    .staff-card.orange { border-left-color: var(--orange-neon); }
-    .staff-card.full { grid-column: span 2; }
-    .staff-card a { color: #fff; text-decoration: none; font-weight: 800; font-size: 12px; display: block; }
-    .staff-card .alias { color: var(--text-sub); font-size: 10px; }
-
-    /* Footer */
-    footer {
-      text-align: center; padding: 20px; border-top: 1px solid rgba(255, 101, 0, 0.3);
-      background: rgba(3, 8, 12, 0.95); border-radius: 20px; margin-top: 30px;
-    }
-  </style>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <div class="ambient-glow-1"></div>
-  <div class="ambient-glow-2"></div>
+<!-- ================= HEADER ================= -->
 
-  <!-- NAVIGATION NAVBAR -->
-  <nav>
-    <a href="#" class="nav-brand">👑 THE CROWN</a>
-    <div class="nav-links">
-      <a href="#about" class="nav-link">About</a>
-      <a href="#members" class="nav-link">Shortcuts</a>
-      <a href="#staff" class="nav-link">Staff</a>
-    </div>
-  </nav>
+<header class="header" id="header">
 
-  <!-- MAIN APP CONTAINER -->
-  <div class="app-container">
+    <div class="container nav">
 
-    <!-- HERO BANNER -->
-    <div class="hero-banner">
-      <div class="hero-crown">👑♟️</div>
-      <div class="hero-title">The Crown</div>
-      <div class="hero-subtitle">Chess Society</div>
-      <div class="hero-divider"></div>
-      <div class="hero-motto">THINK &bull; PLAY &bull; COMPETE &bull; CONQUER</div>
-    </div>
+        <a href="#home" class="brand">
+            <div class="brand-crown">♛</div>
 
-    <!-- LIVE TICKER -->
-    <div class="ticker-bar">
-      <marquee direction="left" scrollamount="4">
-        👑 THE CROWN CHESS SOCIETY &nbsp;&bull;&nbsp; EVERY MOVE MATTERS &nbsp;&bull;&nbsp; EVERY GAME COUNTS &nbsp;&bull;&nbsp; RISE TO THE CROWN 👑
-      </marquee>
-    </div>
+            <div>
+                <strong>THE CROWN</strong>
+                <span>CHESS SOCIETY</span>
+            </div>
+        </a>
 
-    <!-- REAL-TIME CHESS.COM API MEMBER COUNTER -->
-    <div class="live-card">
-      <span class="card-label">🎯 Real-Time Club Members</span>
-      <div class="counter-display" id="member-counter">Loading...</div>
-      <div style="color: var(--text-sub); font-size: 11px; margin-top: 8px;">
-        ⚡ Synced dynamically via official Chess.com API
-      </div>
-    </div>
+        <nav class="nav-links">
+            <a href="#home" class="active">Home</a>
+            <a href="#about">About</a>
+            <a href="#events">Events</a>
+            <a href="#members">Members</a>
+            <a href="#community">Community</a>
+        </nav>
 
-    <!-- ACTION SHORTCUTS (CLUB CENTER) -->
-    <div id="members" class="shortcuts-grid">
-      <a href="https://www.chess.com/clubs/members/the-crown-chess-society" target="_blank" class="action-btn btn-members">
-        👥 VIEW ALL MEMBERS
-      </a>
-      <a href="https://www.chess.com/clubs/events/the-crown-chess-society" target="_blank" class="action-btn btn-events">
-        🏆 TOURNAMENTS & EVENTS
-      </a>
-      <a href="https://discord.gg/SzBpRwru" target="_blank" class="action-btn btn-discord">
-        💬 JOIN OFFICIAL DISCORD
-      </a>
-    </div>
+        <div class="nav-actions">
+            <button id="themeToggle" class="icon-btn" aria-label="Toggle theme">
+                ☾
+            </button>
 
-    <!-- ABOUT SECTION -->
-    <div id="about" class="content-panel">
-      <div class="panel-header">✦ ABOUT THE SOCIETY ✦</div>
-      <p style="font-size: 12.5px; line-height: 1.8; color: #cbd5e1; text-align: center;">
-        Welcome to <strong style="color: var(--cyan-neon);">The Crown Chess Society</strong>. We are an international chess community focused on competitive spirit, personal evolution, and global friendship. All players—from beginners to titled masters—are welcome.
-      </p>
-    </div>
+            <a class="join-btn"
+               href="https://www.chess.com/club"
+               target="_blank">
+                Join Club
+            </a>
 
-    <!-- CORE VALUES -->
-    <div class="content-panel">
-      <div class="panel-header">♟️ CORE VALUES</div>
-      <div class="value-box">
-        <strong style="color: var(--cyan-neon); font-size: 12px;">🧠 LEARN</strong>
-        <p style="color: var(--text-sub); font-size: 11px;">Evolve through every game, win or lose.</p>
-      </div>
-      <div class="value-box orange">
-        <strong style="color: var(--orange-neon); font-size: 12px;">⚔️ COMPETE</strong>
-        <p style="color: var(--text-sub); font-size: 11px;">Play fair and uphold full competitive integrity.</p>
-      </div>
-      <div class="value-box purple">
-        <strong style="color: var(--purple); font-size: 12px;">🤝 CONNECT</strong>
-        <p style="color: var(--text-sub); font-size: 11px;">Build lasting friendships across borders.</p>
-      </div>
-    </div>
-
-    <!-- ADMINISTRATION / STAFF DIRECTORY -->
-    <div id="staff" class="content-panel">
-      <div class="panel-header">👑 CLUB ADMINISTRATION</div>
-
-      <div class="staff-group-title" style="color: var(--gold);">👑 Club Owner</div>
-      <div class="staff-card gold full" style="margin-bottom: 10px;">
-        <a href="https://www.chess.com/member/Krishna29_02_2008" target="_blank">Krishna29_02_2008</a>
-        <div class="alias">Krishna Vishwakarma</div>
-      </div>
-
-      <div class="staff-group-title" style="color: var(--orange-neon);">⭐ Super Admin</div>
-      <div class="staff-card orange full" style="margin-bottom: 10px;">
-        <a href="https://www.chess.com/member/VuiChoiLaCa" target="_blank">VuiChoiLaCa</a>
-        <div class="alias">Trong Khanh Do</div>
-      </div>
-
-      <div class="staff-group-title" style="color: var(--cyan-neon);">🛡️ Admins</div>
-      <div class="staff-grid">
-        <div class="staff-card"><a href="https://www.chess.com/member/AmitJaswalxx01" target="_blank">AmitJaswalxx01</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/Atharva970" target="_blank">Atharva970</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/cutiepie980" target="_blank">cutiepie980</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/Knightly_Kanha" target="_blank">Knightly_Kanha</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/sam45584" target="_blank">sam45584</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/Trevopang123" target="_blank">Trevopang123</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/UnknownRider_64" target="_blank">UnknownRider_64</a></div>
-        <div class="staff-card"><a href="https://www.chess.com/member/Youdonotreallyknowme" target="_blank">Youdonotreallyknowme</a></div>
-      </div>
-
-      <div class="staff-group-title" style="color: var(--orange-neon);">🎯 Coordinators / TOA</div>
-      <div class="staff-grid" style="margin-top: 6px;">
-        <div class="staff-card orange">
-          <a href="https://www.chess.com/member/Ichi-kzawall" target="_blank">Ichi-kzawall</a>
-          <div class="alias">Hikari Momochi</div>
+            <button class="menu-btn" id="menuBtn">
+                ☰
+            </button>
         </div>
-        <div class="staff-card orange">
-          <a href="https://www.chess.com/member/serono_spax" target="_blank">serono_spax</a>
-          <div class="alias">Dawina</div>
-        </div>
-        <div class="staff-card orange full">
-          <a href="https://www.chess.com/member/SilentRook2012" target="_blank">SilentRook2012</a>
-        </div>
-      </div>
+
     </div>
 
-    <!-- FOOTER -->
-    <footer>
-      <div style="font-size: 24px;">👑 ♟️ ⚡</div>
-      <div style="color: #fff; font-weight: 900; font-size: 16px; margin-top: 6px; letter-spacing: 2px;">THE CROWN</div>
-      <div style="color: var(--cyan-neon); font-size: 9px; letter-spacing: 4px; margin-bottom: 8px;">CHESS SOCIETY</div>
-      <p style="color: var(--text-sub); font-size: 11px;">Every move matters &bull; Rise to the Crown</p>
-    </footer>
+</header>
 
-  </div>
 
-  <!-- SCRIPT: FETCH REAL-TIME DATA FROM CHESS.COM PUBLIC API -->
-  <script>
-    async function updateMemberCount() {
-      const display = document.getElementById('member-counter');
-      try {
-        const res = await fetch('https://api.chess.com/pub/club/the-crown-chess-society/members');
-        if (!res.ok) throw new Error('Network error');
-        const data = await res.json();
-        
-        let total = 0;
-        if (data.weekly) total += data.weekly.length;
-        if (data.monthly) total += data.monthly.length;
-        if (data.all_time) total += data.all_time.length;
+<!-- ================= MOBILE MENU ================= -->
 
-        display.innerText = total > 0 ? total.toLocaleString() + " Members" : "Active";
-      } catch (err) {
-        console.error('API Error:', err);
-        display.innerText = "500+ Members";
-      }
-    }
+<div class="mobile-menu" id="mobileMenu">
 
-    updateMemberCount();
-  </script>
+    <a href="#home">Home</a>
+    <a href="#about">About</a>
+    <a href="#events">Events</a>
+    <a href="#members">Members</a>
+    <a href="#community">Community</a>
+
+    <a class="mobile-join"
+       href="https://www.chess.com/club"
+       target="_blank">
+        Join Chess.com Club
+    </a>
+
+</div>
+
+
+<!-- ================= HERO ================= -->
+
+<main>
+
+<section class="hero" id="home">
+
+    <div class="hero-glow glow-one"></div>
+    <div class="hero-glow glow-two"></div>
+
+    <div class="container hero-grid">
+
+        <div class="hero-content">
+
+            <div class="eyebrow">
+                <span class="live-dot"></span>
+                A COMMUNITY BUILT FOR CHESS
+            </div>
+
+            <h1>
+                Where Chess
+                <span>Meets Royalty.</span>
+            </h1>
+
+            <p class="hero-text">
+                Welcome to <strong>The Crown Chess Society</strong> —
+                a growing chess community for players who want to
+                compete, improve, analyze and enjoy the game together.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="https://www.chess.com/club"
+                   target="_blank"
+                   class="primary-btn">
+                    Join the Society
+                    <span>→</span>
+                </a>
+
+                <a href="#about" class="secondary-btn">
+                    Explore Club
+                </a>
+
+            </div>
+
+            <div class="hero-meta">
+
+                <div>
+                    <strong>♟</strong>
+                    <span>Active Community</span>
+                </div>
+
+                <div>
+                    <strong>♜</strong>
+                    <span>Regular Events</span>
+                </div>
+
+                <div>
+                    <strong>♕</strong>
+                    <span>All Levels Welcome</span>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CHESS VISUAL -->
+
+        <div class="hero-chess">
+
+            <div class="chess-card">
+
+                <div class="card-top">
+                    <span>THE CROWN</span>
+                    <span>♛</span>
+                </div>
+
+                <div class="board" id="board">
+
+                    <div class="piece p1">♜</div>
+                    <div class="piece p2">♞</div>
+                    <div class="piece p3">♝</div>
+                    <div class="piece p4">♛</div>
+                    <div class="piece p5">♚</div>
+                    <div class="piece p6">♝</div>
+                    <div class="piece p7">♞</div>
+                    <div class="piece p8">♜</div>
+
+                    <div class="piece white-p w1">♙</div>
+                    <div class="piece white-p w2">♙</div>
+                    <div class="piece white-p w3">♙</div>
+                    <div class="piece white-p w4">♙</div>
+                    <div class="piece white-p w5">♙</div>
+                    <div class="piece white-p w6">♙</div>
+                    <div class="piece white-p w7">♙</div>
+                    <div class="piece white-p w8">♙</div>
+
+                    <div class="piece white-back wb1">♖</div>
+                    <div class="piece white-back wb2">♘</div>
+                    <div class="piece white-back wb3">♗</div>
+                    <div class="piece white-back wb4">♕</div>
+                    <div class="piece white-back wb5">♔</div>
+                    <div class="piece white-back wb6">♗</div>
+                    <div class="piece white-back wb7">♘</div>
+                    <div class="piece white-back wb8">♖</div>
+
+                </div>
+
+                <div class="card-bottom">
+                    <span>PLAY</span>
+                    <span>COMPETE</span>
+                    <span>IMPROVE</span>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= STATS ================= -->
+
+<section class="stats">
+
+    <div class="container stats-grid">
+
+        <div class="stat">
+            <strong data-target="123">0</strong>
+            <span>Members</span>
+        </div>
+
+        <div class="stat">
+            <strong data-target="27">0</strong>
+            <span>Tournaments</span>
+        </div>
+
+        <div class="stat">
+            <strong data-target="18">0</strong>
+            <span>Active Players</span>
+        </div>
+
+        <div class="stat">
+            <strong data-target="100">0</strong>
+            <span>Passion %</span>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= ABOUT ================= -->
+
+<section class="section" id="about">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="section-label">01 — ABOUT US</span>
+
+                <h2>
+                    More than a club.
+                    <span>A society.</span>
+                </h2>
+            </div>
+
+            <p>
+                The Crown Chess Society brings chess players together
+                to create a competitive but friendly environment.
+            </p>
+
+        </div>
+
+
+        <div class="about-grid">
+
+            <div class="about-card featured">
+
+                <div class="about-icon">♛</div>
+
+                <h3>The Crown Philosophy</h3>
+
+                <p>
+                    Every player has a place on our board.
+                    Whether you're just learning chess or fighting
+                    for the top of the leaderboard, our goal is simple:
+                    become stronger together.
+                </p>
+
+                <a href="#community">
+                    Discover our community →
+                </a>
+
+            </div>
+
+
+            <div class="about-card">
+
+                <span class="number">01</span>
+
+                <h3>Compete</h3>
+
+                <p>
+                    Join tournaments, team matches and competitive events.
+                </p>
+
+            </div>
+
+
+            <div class="about-card">
+
+                <span class="number">02</span>
+
+                <h3>Improve</h3>
+
+                <p>
+                    Analyze games, exchange ideas and learn from each other.
+                </p>
+
+            </div>
+
+
+            <div class="about-card">
+
+                <span class="number">03</span>
+
+                <h3>Connect</h3>
+
+                <p>
+                    Meet chess players and build lasting friendships.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= EVENTS ================= -->
+
+<section class="section section-alt" id="events">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="section-label">02 — EVENTS</span>
+
+                <h2>
+                    The next move
+                    <span>starts here.</span>
+                </h2>
+            </div>
+
+            <a href="https://www.chess.com/club"
+               target="_blank"
+               class="outline-btn">
+                View Chess.com →
+            </a>
+
+        </div>
+
+
+        <div class="events-grid">
+
+            <article class="event-card">
+
+                <div class="event-date">
+                    <strong>01</strong>
+                    <span>EVENT</span>
+                </div>
+
+                <div class="event-info">
+
+                    <span class="event-tag">TOURNAMENT</span>
+
+                    <h3>Crown Rapid Arena</h3>
+
+                    <p>
+                        Fast games. Sharp tactics. One crown.
+                    </p>
+
+                    <div class="event-details">
+                        <span>♟ Rapid</span>
+                        <span>♜ Online</span>
+                    </div>
+
+                </div>
+
+                <span class="event-arrow">↗</span>
+
+            </article>
+
+
+            <article class="event-card">
+
+                <div class="event-date">
+                    <strong>02</strong>
+                    <span>EVENT</span>
+                </div>
+
+                <div class="event-info">
+
+                    <span class="event-tag">TEAM</span>
+
+                    <h3>Society Team Battle</h3>
+
+                    <p>
+                        Fight together. Win together.
+                    </p>
+
+                    <div class="event-details">
+                        <span>♛ Team</span>
+                        <span>♜ Online</span>
+                    </div>
+
+                </div>
+
+                <span class="event-arrow">↗</span>
+
+            </article>
+
+
+            <article class="event-card">
+
+                <div class="event-date">
+                    <strong>03</strong>
+                    <span>EVENT</span>
+                </div>
+
+                <div class="event-info">
+
+                    <span class="event-tag">COMMUNITY</span>
+
+                    <h3>Game Analysis Night</h3>
+
+                    <p>
+                        Review games and sharpen your ideas.
+                    </p>
+
+                    <div class="event-details">
+                        <span>♞ Analysis</span>
+                        <span>♟ Community</span>
+                    </div>
+
+                </div>
+
+                <span class="event-arrow">↗</span>
+
+            </article>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= MEMBERS ================= -->
+
+<section class="section" id="members">
+
+    <div class="container">
+
+        <div class="section-heading">
+
+            <div>
+                <span class="section-label">03 — MEMBERS</span>
+
+                <h2>
+                    Meet the
+                    <span>players.</span>
+                </h2>
+            </div>
+
+            <p>
+                Our society is built by the people who play,
+                compete and contribute every day.
+            </p>
+
+        </div>
+
+
+        <div class="members-grid">
+
+            <div class="member-card">
+
+                <div class="avatar">♔</div>
+
+                <div>
+                    <span class="role">SUPER ADMIN</span>
+                    <h3>Club Leadership</h3>
+                    <p>The Crown Administration</p>
+                </div>
+
+            </div>
+
+
+            <div class="member-card">
+
+                <div class="avatar">♕</div>
+
+                <div>
+                    <span class="role">ADMIN</span>
+                    <h3>Community Team</h3>
+                    <p>Keeping the society active</p>
+                </div>
+
+            </div>
+
+
+            <div class="member-card">
+
+                <div class="avatar">♘</div>
+
+                <div>
+                    <span class="role">PLAYER</span>
+                    <h3>Our Members</h3>
+                    <p>123+ chess enthusiasts</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= COMMUNITY ================= -->
+
+<section class="community" id="community">
+
+    <div class="container">
+
+        <div class="community-box">
+
+            <div>
+
+                <span class="section-label">04 — COMMUNITY</span>
+
+                <h2>
+                    Ready to claim
+                    <span>your crown?</span>
+                </h2>
+
+                <p>
+                    Join The Crown Chess Society on Chess.com
+                    and become part of the community.
+                </p>
+
+            </div>
+
+
+            <div class="community-actions">
+
+                <a href="https://www.chess.com/club"
+                   target="_blank"
+                   class="primary-btn">
+                    ♟ Join on Chess.com
+                </a>
+
+                <a href="https://discord.gg/"
+                   target="_blank"
+                   class="discord-btn">
+                    Discord Community
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    <div class="container footer-top">
+
+        <div class="footer-brand">
+
+            <div class="brand-crown">♛</div>
+
+            <div>
+                <strong>THE CROWN</strong>
+                <span>CHESS SOCIETY</span>
+            </div>
+
+        </div>
+
+
+        <div class="footer-links">
+
+            <a href="#home">Home</a>
+            <a href="#about">About</a>
+            <a href="#events">Events</a>
+            <a href="#members">Members</a>
+
+        </div>
+
+    </div>
+
+
+    <div class="container footer-bottom">
+
+        <span>
+            © 2026 The Crown Chess Society
+        </span>
+
+        <span>
+            Built for chess players ♟
+        </span>
+
+    </div>
+
+</footer>
+
+
+<script src="script.js"></script>
+
 </body>
 </html>
+```
