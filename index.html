@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Crown Chess Society - Official Website</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #030708;
+      --card-bg: rgba(8, 15, 20, 0.75);
+      --cyan-neon: #00e5ff;
+      --orange-neon: #ff6500;
+      --gold: #facc15;
+      --purple: #8b5cf6;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border-cyan: rgba(0, 229, 255, 0.25);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px 14px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Glows */
+    .glow-top {
+      position: fixed; top: -150px; left: -150px; width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.15) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+    .glow-bottom {
+      position: fixed; bottom: -150px; right: -150px; width: 350px; height: 350px;
+      background: radial-gradient(circle, rgba(255, 101, 0, 0.15) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+
+    /* Main Container */
+    .container {
+      width: 100%;
+      max-width: 480px;
+      background: var(--bg-dark);
+      border: 1px solid rgba(0, 229, 255, 0.2);
+      border-radius: 28px;
+      padding: 24px 16px;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(180deg, rgba(12, 23, 29, 0.85) 0%, rgba(5, 10, 14, 0.95) 100%);
+      border: 1px solid rgba(0, 229, 255, 0.4);
+      box-shadow: 0 0 30px rgba(0, 229, 255, 0.15);
+      border-radius: 22px;
+      padding: 32px 20px 24px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header .icon {
+      font-size: 52px; line-height: 1; margin-bottom: 10px;
+      filter: drop-shadow(0 0 18px var(--cyan-neon));
+    }
+    .header h1 {
+      color: #fff; font-size: 26px; font-weight: 900; letter-spacing: 3px;
+      text-shadow: 0 0 16px rgba(0, 229, 255, 0.8); text-transform: uppercase;
+    }
+    .header .sub-title {
+      color: var(--cyan-neon); font-size: 11px; font-weight: 800; letter-spacing: 6px;
+      margin-top: 4px; text-transform: uppercase;
+    }
+    .divider {
+      height: 1px; margin: 18px 20px;
+      background: linear-gradient(90deg, transparent, var(--cyan-neon), #ffffff, var(--orange-neon), transparent);
+      opacity: 0.8;
+    }
+    .header .tagline {
+      color: var(--text-muted); font-size: 11px; font-weight: 700; letter-spacing: 2px;
+    }
+
+    /* Marquee Banner */
+    .marquee-wrap {
+      background: linear-gradient(90deg, rgba(6, 32, 39, 0.9), rgba(16, 24, 29, 0.9), rgba(50, 19, 9, 0.9));
+      border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 12px;
+      padding: 10px 14px; margin-bottom: 20px; font-size: 12px; font-weight: 800;
+      color: #e0f7fa; letter-spacing: 1px;
+    }
+
+    /* Sections */
+    .section-box {
+      background: var(--card-bg); border: 1px solid var(--border-cyan);
+      border-radius: 22px; padding: 22px 18px; margin-bottom: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .section-title {
+      text-align: center; color: var(--cyan-neon); font-size: 13px; font-weight: 900;
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px;
+      text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
+    }
+
+    /* Live Counter */
+    .live-counter { text-align: center; }
+    .counter-badge {
+      display: inline-block; margin: 8px 0; padding: 10px 22px;
+      background: rgba(0, 229, 255, 0.1); border: 1px solid var(--cyan-neon);
+      border-radius: 12px; box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+    .counter-number {
+      font-size: 26px; font-weight: 900; color: #ffffff;
+      text-shadow: 0 0 12px var(--cyan-neon);
+    }
+
+    /* Quick Links / Shortcuts */
+    .btn-list { display: flex; flex-direction: column; gap: 10px; }
+    .btn {
+      display: block; padding: 14px; border-radius: 12px; text-align: center;
+      text-decoration: none; font-size: 12px; font-weight: 800; letter-spacing: 1px;
+      transition: all 0.3s ease; border: 1px solid transparent;
+    }
+    .btn-cyan {
+      color: #78efff; background: rgba(11, 26, 32, 0.8);
+      border-color: rgba(0, 229, 255, 0.4);
+    }
+    .btn-cyan:hover {
+      background: linear-gradient(135deg, #00e5ff, #008ca3); color: #fff;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.6);
+    }
+    .btn-orange {
+      color: #ffae6e; background: rgba(28, 16, 9, 0.8);
+      border-color: rgba(255, 114, 0, 0.4);
+    }
+    .btn-orange:hover {
+      background: linear-gradient(135deg, #ff8a00, #ff3d00); color: #fff;
+      box-shadow: 0 0 18px rgba(255, 101, 0, 0.6);
+    }
+    .btn-purple {
+      color: #c4b5fd; background: rgba(21, 17, 38, 0.8);
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+    .btn-purple:hover {
+      background: linear-gradient(135deg, #8b5cf6, #5b21b6); color: #fff;
+      box-shadow: 0 0 18px rgba(139, 92, 246, 0.6);
+    }
+
+    /* Core Values */
+    .val-item {
+      background: rgba(11, 24, 29, 0.7); padding: 12px 14px; border-radius: 8px;
+      margin-bottom: 10px; border-left: 4px solid var(--cyan-neon);
+    }
+    .val-item.orange { border-left-color: var(--orange-neon); }
+    .val-item.purple { border-left-color: var(--purple); }
+    .val-title { font-size: 12px; font-weight: 800; margin-bottom: 2px; }
+    .val-desc { color: var(--text-muted); font-size: 11px; }
+
+    /* Members Grid & Admin List */
+    .admin-role {
+      font-size: 10px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase;
+      margin-top: 14px; margin-bottom: 6px; color: var(--cyan-neon);
+    }
+    .member-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    }
+    .member-card {
+      background: rgba(11, 20, 24, 0.7); border: 1px solid rgba(0, 229, 255, 0.2);
+      border-left: 3px solid var(--cyan-neon); padding: 10px; border-radius: 8px;
+    }
+    .member-card.gold { border-left-color: var(--gold); }
+    .member-card.orange { border-left-color: var(--orange-neon); }
+    .member-card.full { grid-column: span 2; }
+    .member-card a {
+      color: #fff; text-decoration: none; font-weight: 800; font-size: 12px; display: block;
+    }
+    .member-card .sub-info { color: var(--text-muted); font-size: 10.5px; }
+
+    /* Footer */
+    .footer {
+      text-align: center; padding: 24px 16px;
+      background: linear-gradient(135deg, rgba(7, 21, 27, 0.95), rgba(19, 12, 8, 0.95));
+      border: 1px solid rgba(255, 114, 0, 0.4); border-radius: 22px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-top"></div>
+  <div class="glow-bottom"></div>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="icon">👑♟️</div>
+      <h1>The Crown</h1>
+      <div class="sub-title">Chess Society</div>
+      <div class="divider"></div>
+      <div class="tagline">THINK &bull; PLAY &bull; COMPETE &bull; CONQUER</div>
+    </div>
+
+    <!-- MARQUEE BANNER -->
+    <div class="marquee-wrap">
+      <marquee direction="left" scrollamount="4">
+        👑 THE CROWN CHESS SOCIETY &nbsp;&bull;&nbsp; EVERY MOVE MATTERS &nbsp;&bull;&nbsp; EVERY GAME COUNTS &nbsp;&bull;&nbsp; RISE TO THE CROWN 👑
+      </marquee>
+    </div>
+
+    <!-- LIVE MEMBER COUNTER -->
+    <div class="section-box live-counter">
+      <div class="section-title">🎯 THÀNH VIÊN HIỆN TẠI (REAL-TIME)</div>
+      <div class="counter-badge">
+        <div class="counter-number" id="member-count">Đang tải...</div>
+      </div>
+      <div style="color: var(--text-muted); font-size: 11px; margin-top: 6px;">
+        🔥 Cập nhật tự động trực tiếp từ API Chess.com
+      </div>
+    </div>
+
+    <!-- CLUB CENTER (QUICK LINKS) -->
+    <div class="section-box">
+      <div class="section-title">⚡ LỐI TẮT NHANH (CLUB CENTER)</div>
+      <div class="btn-list">
+        <a href="https://www.chess.com/clubs/members/the-crown-chess-society" target="_blank" class="btn btn-cyan">👥 DANH SÁCH THÀNH VIÊN CLB</a>
+        <a href="https://www.chess.com/clubs/events/the-crown-chess-society" target="_blank" class="btn btn-orange">🏆 GIẢI ĐẤU & SỰ KIỆN CLB</a>
+        <a href="https://www.chess.com/club/the-crown-chess-society/announcements" target="_blank" class="btn btn-cyan">📢 THÔNG BÁO MỚI NHẤT</a>
+        <a href="https://discord.gg/SzBpRwru" target="_blank" class="btn btn-purple">💬 THAM GIA DISCORD CLB</a>
+      </div>
+    </div>
+
+    <!-- ABOUT / WELCOME -->
+    <div class="section-box" style="text-align: center;">
+      <div class="section-title">✦ GIỚI THIỆU CLB ✦</div>
+      <p style="font-size: 12.5px; line-height: 1.8; color: var(--text-main);">
+        Chào mừng bạn đến với <strong style="color: var(--cyan-neon);">The Crown Chess Society</strong> 👑♟️<br><br>
+        Đây là cộng đồng cờ vua quốc tế quy tụ các kỳ thủ đam mê giao lưu, nâng cao trình độ và chinh phục các giải đấu. Dù bạn là người mới hay đã có nhiều kinh nghiệm, bàn cờ của chúng tôi luôn rộng mở chào đón bạn.
+      </p>
+    </div>
+
+    <!-- CORE VALUES -->
+    <div class="section-box">
+      <div class="section-title">♟️ GIÁ TRỊ CỐT LÕI</div>
+      <div class="val-item">
+        <div class="val-title" style="color: var(--cyan-neon);">🧠 LEARN (HỌC HỎI)</div>
+        <div class="val-desc">Không ngừng cải thiện tư duy qua từng ván thắng và thất bại.</div>
+      </div>
+      <div class="val-item orange">
+        <div class="val-title" style="color: var(--orange-neon);">⚔️ COMPETE (THI ĐẤU)</div>
+        <div class="val-desc">Chơi hết mình với tinh thần thượng võ và Fair Play.</div>
+      </div>
+      <div class="val-item purple">
+        <div class="val-title" style="color: #c4b5fd;">🤝 CONNECT (KẾT NỐI)</div>
+        <div class="val-desc">Xây dựng tình bạn và sự gắn kết giữa các kỳ thủ khắp mọi nơi.</div>
+      </div>
+    </div>
+
+    <!-- BAN ĐIỀU HÀNH & THÀNH VIÊN NỔI BẬT -->
+    <div class="section-box">
+      <div class="section-title">👑 BAN ĐIỀU HÀNH & BQT</div>
+
+      <div class="admin-role" style="color: var(--gold);">👑 CLUB OWNER</div>
+      <div class="member-card gold full" style="margin-bottom: 10px;">
+        <a href="https://www.chess.com/member/Krishna29_02_2008" target="_blank">Krishna29_02_2008</a>
+        <div class="sub-info">Krishna Vishwakarma</div>
+      </div>
+
+      <div class="admin-role" style="color: var(--orange-neon);">⭐ SUPER ADMIN</div>
+      <div class="member-card orange full" style="margin-bottom: 10px;">
+        <a href="https://www.chess.com/member/VuiChoiLaCa" target="_blank">VuiChoiLaCa</a>
+        <div class="sub-info">Trong Khanh Do</div>
+      </div>
+
+      <div class="admin-role">🛡️ ADMINS</div>
+      <div class="member-grid">
+        <div class="member-card"><a href="https://www.chess.com/member/AmitJaswalxx01" target="_blank">AmitJaswalxx01</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/Atharva970" target="_blank">Atharva970</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/cutiepie980" target="_blank">cutiepie980</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/Knightly_Kanha" target="_blank">Knightly_Kanha</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/sam45584" target="_blank">sam45584</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/Trevopang123" target="_blank">Trevopang123</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/UnknownRider_64" target="_blank">UnknownRider_64</a></div>
+        <div class="member-card"><a href="https://www.chess.com/member/Youdonotreallyknowme" target="_blank">Youdonotreallyknowme</a></div>
+      </div>
+
+      <div class="admin-role" style="color: var(--orange-neon);">🎯 COORDINATORS</div>
+      <div class="member-grid">
+        <div class="member-card orange">
+          <a href="https://www.chess.com/member/Ichi-kzawall" target="_blank">Ichi-kzawall</a>
+          <div class="sub-info">Hikari Momochi</div>
+        </div>
+        <div class="member-card orange">
+          <a href="https://www.chess.com/member/serono_spax" target="_blank">serono_spax</a>
+          <div class="sub-info">Dawina</div>
+        </div>
+        <div class="member-card orange full">
+          <a href="https://www.chess.com/member/SilentRook2012" target="_blank">SilentRook2012</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div style="font-size: 28px;">👑 ♟️ ⚡</div>
+      <h2 style="color: #fff; font-size: 18px; margin-top: 6px; letter-spacing: 2px;">THE CROWN</h2>
+      <div style="color: var(--cyan-neon); font-size: 10px; letter-spacing: 4px; margin-bottom: 12px;">CHESS SOCIETY</div>
+      <p style="color: var(--text-muted); font-size: 11px;">Every move matters &bull; Rise to the Crown</p>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT FETCH DATA TỰ ĐỘNG TỪ CHESS.COM -->
+  <script>
+    async function fetchMemberCount() {
+      const countElement = document.getElementById('member-count');
+      try {
+        const response = await fetch('https://api.chess.com/pub/club/the-crown-chess-society/members');
+        if (!response.ok) throw new Error('Không thể kết nối API');
+        const data = await response.json();
+        
+        let total = 0;
+        if (data.weekly) total += data.weekly.length;
+        if (data.monthly) total += data.monthly.length;
+        if (data.all_time) total += data.all_time.length;
+
+        countElement.innerText = total > 0 ? total.toLocaleString() + " Members" : "Active";
+      } catch (error) {
+        console.error('Lỗi khi fetch API Chess.com:', error);
+        countElement.innerText = "500+ Thành viên";
+      }
+    }
+
+    fetchMemberCount();
+  </script>
+</body>
+</html>
