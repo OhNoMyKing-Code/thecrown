@@ -1,1029 +1,1942 @@
 /* =========================================================
    THE CROWN CHESS SOCIETY
-   V1.5 — LIVE CLUB SYSTEM
+   V1 — STYLE
 ========================================================= */
 
-const CLUB_SLUG = "the-crown-chess-society";
+:root {
 
-const API = {
-    club: `https://api.chess.com/pub/club/${CLUB_SLUG}`,
-    members: `https://api.chess.com/pub/club/${CLUB_SLUG}/members`,
-    matches: `https://api.chess.com/pub/club/${CLUB_SLUG}/matches`
-};
+    --bg: #08080b;
+    --bg-2: #0d0d12;
+    --surface: #111116;
+    --surface-2: #17171e;
 
-const CHESS_CLUB =
-    "https://www.chess.com/club/the-crown-chess-society";
+    --gold: #d9a441;
+    --gold-light: #f2c96b;
+    --gold-dark: #8e651e;
 
+    --white: #f8f8f8;
+    --text: #dedee3;
+    --muted: #96969f;
 
-/* =========================================================
-   DOM
-========================================================= */
+    --border: rgba(255,255,255,.09);
 
-const $ = id => document.getElementById(id);
+    --radius: 18px;
 
-const memberCount = $("memberCount");
-const eventCount = $("eventCount");
-const matchCount = $("matchCount");
-const statusText = $("statusText");
-
-const heroMembers = $("heroMembers");
-const heroEvents = $("heroEvents");
-
-const membersGrid = $("membersGrid");
-const memberSearch = $("memberSearch");
-const memberResultText = $("memberResultText");
-const refreshMembers = $("refreshMembers");
-
-const apiStatus = $("apiStatus");
-const eventsGrid = $("eventsGrid");
-const eventsStatus = $("eventsStatus");
-
-const menuButton = $("menuButton");
-const mobileMenu = $("mobileMenu");
-
-const currentYear = $("currentYear");
-
-
-/* =========================================================
-   STATE
-========================================================= */
-
-let allMembers = [];
-
-let clubData = null;
-
-let matchData = {
-    registered: [],
-    in_progress: [],
-    finished: []
-};
-
-
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function formatNumber(value) {
-
-    if (
-        value === undefined ||
-        value === null ||
-        Number.isNaN(Number(value))
-    ) {
-        return "—";
-    }
-
-    return Number(value).toLocaleString("en-US");
-}
-
-
-function escapeHTML(value) {
-
-    const div = document.createElement("div");
-
-    div.textContent = value ?? "";
-
-    return div.innerHTML;
-}
-
-
-function initial(username) {
-
-    if (!username) {
-        return "?";
-    }
-
-    return username
-        .trim()
-        .charAt(0)
-        .toUpperCase();
-}
-
-
-function formatDate(timestamp) {
-
-    if (!timestamp) {
-        return "Time unavailable";
-    }
-
-    return new Date(timestamp * 1000)
-        .toLocaleString(
-            "en-GB",
-            {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit"
-            }
-        );
-}
-
-
-function matchURL(match) {
-
-    return (
-        match.url ||
-        match["@id"] ||
-        "https://www.chess.com/clubs/matches/open"
-    );
+    --max-width: 1180px;
 }
 
 
 /* =========================================================
-   API STATUS
+   RESET
 ========================================================= */
 
-function setAPIStatus(
-    message,
-    online = true
-) {
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    if (!apiStatus) {
-        return;
-    }
+html {
+    scroll-behavior: smooth;
+}
 
-    apiStatus.innerHTML = `
-        <span
-            class="status-dot"
-            style="
-                background:${online ? "#5fd38b" : "#d86b6b"};
-                box-shadow:0 0 10px ${
-                    online
-                        ? "rgba(95,211,139,.6)"
-                        : "rgba(216,107,107,.5)"
-                };
-            "
-        ></span>
+body {
 
-        ${escapeHTML(message)}
-    `;
+    font-family: "Inter", sans-serif;
+
+    background:
+        radial-gradient(
+            circle at 80% 10%,
+            rgba(217,164,65,.08),
+            transparent 30%
+        ),
+        var(--bg);
+
+    color: var(--text);
+
+    line-height: 1.6;
+
+    overflow-x: hidden;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+::selection {
+    background: var(--gold);
+    color: #111;
 }
 
 
 /* =========================================================
-   FETCH JSON
+   SCROLLBAR
 ========================================================= */
 
-async function fetchJSON(url) {
+::-webkit-scrollbar {
+    width: 9px;
+}
 
-    const response = await fetch(
-        url,
-        {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            },
-            cache: "no-store"
-        }
-    );
+::-webkit-scrollbar-track {
+    background: #070709;
+}
 
-    if (!response.ok) {
+::-webkit-scrollbar-thumb {
+    background: #3b3324;
+    border-radius: 20px;
+}
 
-        throw new Error(
-            `${response.status} ${response.statusText}`
-        );
-    }
-
-    return response.json();
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gold-dark);
 }
 
 
 /* =========================================================
-   LOAD CLUB
+   NAVBAR
 ========================================================= */
 
-async function loadClub() {
+.navbar {
 
-    try {
+    position: fixed;
 
-        const data =
-            await fetchJSON(API.club);
+    top: 0;
+    left: 0;
 
-        clubData = data;
+    width: 100%;
 
+    z-index: 1000;
 
-        /* -----------------------------------------
-           MEMBERS
-        ----------------------------------------- */
+    background: rgba(8,8,11,.78);
 
-        const members =
-            data.members_count ??
-            data.members ??
-            0;
+    backdrop-filter: blur(18px);
 
-        memberCount.textContent =
-            formatNumber(members);
+    border-bottom: 1px solid var(--border);
+}
 
-        heroMembers.textContent =
-            formatNumber(members);
+.nav-inner {
 
+    max-width: var(--max-width);
 
-        /* -----------------------------------------
-           EVENTS
-        ----------------------------------------- */
+    height: 76px;
 
-        const events =
-            data.events_played ??
-            data.events ??
-            0;
+    margin: auto;
 
-        eventCount.textContent =
-            formatNumber(events);
+    padding: 0 24px;
 
-        heroEvents.textContent =
-            formatNumber(events);
+    display: flex;
 
+    align-items: center;
 
-        /* -----------------------------------------
-           STATUS
-        ----------------------------------------- */
+    justify-content: space-between;
+}
 
-        statusText.textContent =
-            data.visibility === "private"
-                ? "PRIVATE"
-                : "ACTIVE";
+.brand {
 
+    display: flex;
 
-        setAPIStatus(
-            "Chess.com data connected",
-            true
+    align-items: center;
+
+    gap: 12px;
+}
+
+.brand-crown {
+
+    width: 43px;
+    height: 43px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #e6bd5d,
+            #9a6d20
         );
 
-    } catch (error) {
+    color: #111;
 
-        console.error(
-            "Club API error:",
-            error
-        );
+    font-size: 25px;
 
-        setAPIStatus(
-            "Chess.com API temporarily unavailable",
-            false
-        );
-
-    }
+    box-shadow:
+        0 0 25px rgba(217,164,65,.15);
 }
 
+.brand-name {
 
-/* =========================================================
-   LOAD MEMBERS
-========================================================= */
+    font-weight: 800;
 
-async function loadMembers() {
+    font-size: 14px;
 
-    membersGrid.innerHTML = `
-        <div class="loading-card">
-            <div>
-                <div class="loader"></div>
-                <p>Updating members...</p>
-            </div>
-        </div>
-    `;
+    letter-spacing: 2px;
 
-    try {
-
-        const data =
-            await fetchJSON(API.members);
-
-
-        /*
-         * Chess.com returns:
-         *
-         * weekly
-         * monthly
-         * all_time
-         */
-
-        const combined = [
-            ...(data.weekly || []),
-            ...(data.monthly || []),
-            ...(data.all_time || [])
-        ];
-
-
-        const unique =
-            new Map();
-
-
-        combined.forEach(member => {
-
-            const username =
-                typeof member === "string"
-                    ? member
-                    : member.username;
-
-            if (!username) {
-                return;
-            }
-
-            unique.set(
-                username.toLowerCase(),
-                username
-            );
-
-        });
-
-
-        allMembers =
-            Array.from(unique.values());
-
-
-        allMembers.sort(
-            (a, b) =>
-                a.localeCompare(
-                    b,
-                    undefined,
-                    {
-                        sensitivity: "base"
-                    }
-                )
-        );
-
-
-        renderMembers(allMembers);
-
-
-    } catch (error) {
-
-        console.error(
-            "Members API error:",
-            error
-        );
-
-
-        membersGrid.innerHTML = `
-
-            <div class="loading-card">
-
-                <div>
-
-                    <div style="
-                        font-size:36px;
-                        color:#d9a441;
-                    ">
-                        ♟
-                    </div>
-
-                    <p>
-                        Member data unavailable.
-                    </p>
-
-                    <a
-                        href="${CHESS_CLUB}"
-                        target="_blank"
-                        rel="noopener"
-                        style="
-                            display:inline-block;
-                            margin-top:10px;
-                            color:#f2c96b;
-                        "
-                    >
-                        Open Chess.com →
-                    </a>
-
-                </div>
-
-            </div>
-        `;
-
-        memberResultText.textContent =
-            "Live member data unavailable.";
-    }
+    color: var(--white);
 }
 
+.brand-sub {
 
-/* =========================================================
-   RENDER MEMBERS
-========================================================= */
+    color: var(--gold);
 
-function renderMembers(
-    members
-) {
+    font-size: 9px;
 
-    const limit = 48;
+    letter-spacing: 3px;
 
-    const visible =
-        members.slice(0, limit);
-
-
-    if (!visible.length) {
-
-        membersGrid.innerHTML = `
-            <div class="loading-card">
-                <div>
-                    <div style="
-                        font-size:35px;
-                        color:#d9a441;
-                    ">
-                        ♟
-                    </div>
-
-                    <p>
-                        No members found.
-                    </p>
-                </div>
-            </div>
-        `;
-
-        memberResultText.textContent =
-            "0 members.";
-
-        return;
-    }
-
-
-    membersGrid.innerHTML =
-        visible
-            .map(username => {
-
-                const safe =
-                    escapeHTML(username);
-
-                const avatar =
-                    initial(username);
-
-                const profile =
-                    `https://www.chess.com/member/${encodeURIComponent(username)}`;
-
-
-                return `
-
-                    <a
-                        class="member-card"
-                        href="${profile}"
-                        target="_blank"
-                        rel="noopener"
-                    >
-
-                        <div class="member-avatar">
-                            ${avatar}
-                        </div>
-
-                        <div style="min-width:0">
-
-                            <div class="member-name">
-                                ${safe}
-                            </div>
-
-                            <div class="member-label">
-                                Chess.com Member
-                            </div>
-
-                        </div>
-
-                    </a>
-
-                `;
-
-            })
-            .join("");
-
-
-    memberResultText.textContent =
-        members.length > limit
-            ? `Showing ${formatNumber(limit)} of ${formatNumber(members.length)} members.`
-            : `${formatNumber(members.length)} members loaded.`;
+    font-weight: 700;
 }
 
+.nav-links {
 
-/* =========================================================
-   LOAD CLUB MATCHES
-========================================================= */
+    display: flex;
 
-async function loadMatches() {
-
-    if (!eventsGrid) {
-        return;
-    }
-
-
-    eventsGrid.innerHTML = `
-        <div class="loading-card">
-            <div>
-                <div class="loader"></div>
-                <p>Loading live club events...</p>
-            </div>
-        </div>
-    `;
-
-
-    try {
-
-        const data =
-            await fetchJSON(API.matches);
-
-
-        matchData = {
-
-            registered:
-                data.registered || [],
-
-            in_progress:
-                data.in_progress || [],
-
-            finished:
-                data.finished || []
-
-        };
-
-
-        const active = [
-            ...matchData.in_progress
-                .map(match => ({
-                    ...match,
-                    status: "LIVE"
-                })),
-
-            ...matchData.registered
-                .map(match => ({
-                    ...match,
-                    status: "UPCOMING"
-                }))
-        ];
-
-
-        /*
-         * Only display active/upcoming events.
-         */
-
-        renderMatches(active);
-
-
-        if (matchCount) {
-
-            matchCount.textContent =
-                formatNumber(
-                    matchData.in_progress.length
-                );
-
-        }
-
-
-    } catch (error) {
-
-        console.error(
-            "Matches API error:",
-            error
-        );
-
-
-        eventsGrid.innerHTML = `
-
-            <div class="loading-card">
-
-                <div>
-
-                    <div style="
-                        font-size:35px;
-                        color:#d9a441;
-                    ">
-                        ⚔
-                    </div>
-
-                    <p>
-                        Live club events are unavailable.
-                    </p>
-
-                    <a
-                        href="https://www.chess.com/clubs/matches/open"
-                        target="_blank"
-                        rel="noopener"
-                        style="
-                            display:inline-block;
-                            margin-top:10px;
-                            color:#f2c96b;
-                        "
-                    >
-                        Open Chess.com Matches →
-                    </a>
-
-                </div>
-
-            </div>
-
-        `;
-
-    }
+    gap: 30px;
 }
 
+.nav-links a {
 
-/* =========================================================
-   RENDER MATCHES
-========================================================= */
+    color: #a9a9b1;
 
-function renderMatches(
-    matches
-) {
+    font-size: 13px;
 
-    if (!matches.length) {
+    font-weight: 600;
 
-        eventsGrid.innerHTML = `
-
-            <article class="event-card">
-
-                <div class="event-date">
-
-                    <span>LIVE</span>
-
-                    <strong>♛</strong>
-
-                </div>
-
-                <div class="event-info">
-
-                    <div class="event-type">
-                        NO ACTIVE MATCHES
-                    </div>
-
-                    <h3>
-                        The board is waiting.
-                    </h3>
-
-                    <p>
-                        There are currently no registered
-                        or in-progress club matches.
-                    </p>
-
-                    <a
-                        href="${CHESS_CLUB}"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Check The Crown →
-                    </a>
-
-                </div>
-
-            </article>
-
-        `;
-
-        if (eventsStatus) {
-
-            eventsStatus.textContent =
-                "No active events right now.";
-
-        }
-
-        return;
-    }
-
-
-    eventsGrid.innerHTML =
-        matches
-            .slice(0, 12)
-            .map(match => {
-
-                const name =
-                    escapeHTML(
-                        match.name ||
-                        "Club Match"
-                    );
-
-
-                const opponent =
-                    match.opponent
-                        ? match.opponent
-                        : null;
-
-
-                let opponentName =
-                    "Chess.com Club";
-
-
-                if (opponent) {
-
-                    opponentName =
-                        opponent
-                            .split("/")
-                            .filter(Boolean)
-                            .pop() ||
-                        "Opponent";
-
-                }
-
-
-                opponentName =
-                    escapeHTML(
-                        opponentName
-                    );
-
-
-                const status =
-                    match.status === "LIVE"
-                        ? "LIVE NOW"
-                        : "UPCOMING";
-
-
-                const statusClass =
-                    match.status === "LIVE"
-                        ? "live"
-                        : "upcoming";
-
-
-                const time =
-                    match.start_time
-                        ? formatDate(
-                            match.start_time
-                        )
-                        : "Start time unavailable";
-
-
-                return `
-
-                    <article class="
-                        event-card
-                        dynamic-event
-                    ">
-
-                        <div class="
-                            event-date
-                            ${statusClass}
-                        ">
-
-                            <span>
-                                ${status}
-                            </span>
-
-                            <strong>
-                                ${match.status === "LIVE"
-                                    ? "⚡"
-                                    : "♛"}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="event-info">
-
-                            <div class="event-type">
-                                CLUB MATCH
-                            </div>
-
-                            <h3>
-                                ${name}
-                            </h3>
-
-                            <p>
-                                Opponent:
-                                <strong>
-                                    ${opponentName}
-                                </strong>
-                            </p>
-
-                            <p>
-                                ${time}
-                            </p>
-
-                            <a
-                                href="${matchURL(match)}"
-                                target="_blank"
-                                rel="noopener"
-                            >
-                                ${
-                                    match.status === "LIVE"
-                                        ? "Watch / Join →"
-                                        : "View Event →"
-                                }
-                            </a>
-
-                        </div>
-
-                    </article>
-
-                `;
-
-            })
-            .join("");
-
-
-    if (eventsStatus) {
-
-        const live =
-            matchData.in_progress.length;
-
-        const upcoming =
-            matchData.registered.length;
-
-
-        eventsStatus.textContent =
-            `${live} live • ${upcoming} upcoming`;
-    }
+    transition: .25s;
 }
 
+.nav-links a:hover {
 
-/* =========================================================
-   SEARCH
-========================================================= */
-
-if (memberSearch) {
-
-    memberSearch.addEventListener(
-        "input",
-        () => {
-
-            const query =
-                memberSearch.value
-                    .trim()
-                    .toLowerCase();
-
-
-            if (!query) {
-
-                renderMembers(
-                    allMembers
-                );
-
-                return;
-            }
-
-
-            const filtered =
-                allMembers.filter(
-                    username =>
-                        username
-                            .toLowerCase()
-                            .includes(query)
-                );
-
-
-            renderMembers(
-                filtered
-            );
-
-            memberResultText.textContent =
-                `${filtered.length} matching members.`;
-
-        }
-    );
-
+    color: var(--gold-light);
 }
 
+.nav-button {
 
-/* =========================================================
-   MANUAL REFRESH
-========================================================= */
+    padding: 10px 18px;
 
-if (refreshMembers) {
+    border: 1px solid rgba(217,164,65,.5);
 
-    refreshMembers.addEventListener(
-        "click",
-        async () => {
+    border-radius: 9px;
 
-            refreshMembers.disabled =
-                true;
+    color: var(--gold-light);
 
-            refreshMembers.textContent =
-                "↻ Updating...";
+    font-size: 13px;
 
+    font-weight: 700;
 
-            await Promise.all([
-                loadClub(),
-                loadMembers(),
-                loadMatches()
-            ]);
-
-
-            refreshMembers.disabled =
-                false;
-
-            refreshMembers.textContent =
-                "↻ Refresh";
-
-        }
-    );
-
+    transition: .25s;
 }
 
+.nav-button:hover {
 
-/* =========================================================
-   AUTOMATIC REFRESH
-========================================================= */
+    background: var(--gold);
 
-/*
- * Website checks the API every 30 minutes.
- *
- * IMPORTANT:
- * Chess.com's PubAPI itself may cache data
- * for up to 12 hours.
- */
+    color: #111;
+}
 
-const AUTO_REFRESH =
-    30 * 60 * 1000;
+.menu-button {
 
+    display: none;
 
-setInterval(
-    async () => {
+    border: 0;
 
-        console.log(
-            "[Crown] Automatic update..."
-        );
+    background: none;
 
+    color: white;
 
-        await Promise.all([
-            loadClub(),
-            loadMembers(),
-            loadMatches()
-        ]);
-
-    },
-    AUTO_REFRESH
-);
+    font-size: 25px;
+}
 
 
 /* =========================================================
    MOBILE MENU
 ========================================================= */
 
-if (menuButton && mobileMenu) {
+.mobile-menu {
 
-    menuButton.addEventListener(
-        "click",
-        () => {
+    display: none;
 
-            mobileMenu.classList.toggle(
-                "open"
-            );
+    position: fixed;
 
-        }
-    );
+    z-index: 999;
 
+    top: 76px;
 
-    document
-        .querySelectorAll(
-            ".mobile-menu a"
-        )
-        .forEach(link => {
+    left: 0;
 
-            link.addEventListener(
-                "click",
-                () => {
+    width: 100%;
 
-                    mobileMenu.classList.remove(
-                        "open"
-                    );
+    padding: 20px;
 
-                }
-            );
+    background: rgba(10,10,13,.98);
 
-        });
+    border-bottom: 1px solid var(--border);
+}
 
+.mobile-menu.open {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 16px;
+}
+
+.mobile-menu a {
+
+    color: #ccc;
+
+    padding: 8px 4px;
+}
+
+.mobile-join {
+
+    color: var(--gold-light) !important;
 }
 
 
 /* =========================================================
-   ESCAPE MENU
+   HERO
 ========================================================= */
 
-document.addEventListener(
-    "keydown",
-    event => {
+.hero {
 
-        if (
-            event.key === "Escape" &&
-            mobileMenu
-        ) {
+    min-height: 850px;
 
-            mobileMenu.classList.remove(
-                "open"
-            );
+    position: relative;
 
-        }
+    display: flex;
 
+    align-items: center;
+
+    overflow: hidden;
+
+    padding: 130px 24px 100px;
+}
+
+.hero-background {
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+
+        radial-gradient(
+            circle at 70% 50%,
+            rgba(217,164,65,.13),
+            transparent 32%
+        ),
+
+        radial-gradient(
+            circle at 10% 70%,
+            rgba(80,70,40,.08),
+            transparent 30%
+        );
+}
+
+.hero-background::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    opacity: .2;
+
+    background-image:
+
+        linear-gradient(
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 55px 55px;
+
+    mask-image: linear-gradient(
+        to bottom,
+        black,
+        transparent
+    );
+}
+
+.hero-content {
+
+    width: min(
+        var(--max-width),
+        100%
+    );
+
+    margin: auto;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+.hero-badge {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 8px 13px;
+
+    border-radius: 50px;
+
+    border: 1px solid rgba(217,164,65,.3);
+
+    background: rgba(217,164,65,.06);
+
+    color: var(--gold-light);
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+}
+
+.hero-badge span {
+
+    font-size: 17px;
+}
+
+.hero h1 {
+
+    margin-top: 25px;
+
+    max-width: 800px;
+
+    font-family: "Playfair Display", serif;
+
+    font-size: clamp(
+        55px,
+        9vw,
+        108px
+    );
+
+    line-height: .9;
+
+    letter-spacing: -4px;
+
+    color: var(--white);
+}
+
+.hero h1 span {
+
+    display: block;
+
+    color: transparent;
+
+    background:
+        linear-gradient(
+            90deg,
+            #f4d17b,
+            #b77b22
+        );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.hero-tagline {
+
+    margin-top: 28px;
+
+    color: var(--gold-light);
+
+    font-weight: 800;
+
+    letter-spacing: 4px;
+
+    font-size: 12px;
+}
+
+.hero-description {
+
+    margin-top: 16px;
+
+    max-width: 580px;
+
+    color: var(--muted);
+
+    font-size: 16px;
+}
+
+.hero-buttons {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-top: 30px;
+
+    flex-wrap: wrap;
+}
+
+.button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 12px;
+
+    min-height: 48px;
+
+    padding: 0 20px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    transition: .25s;
+}
+
+.button.primary {
+
+    background:
+        linear-gradient(
+            135deg,
+            #f1c96b,
+            #ae771e
+        );
+
+    color: #111;
+
+    box-shadow:
+        0 12px 35px rgba(217,164,65,.16);
+}
+
+.button.primary:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 16px 45px rgba(217,164,65,.25);
+}
+
+.button.secondary {
+
+    border: 1px solid var(--border);
+
+    color: #ddd;
+
+    background: rgba(255,255,255,.025);
+}
+
+.button.secondary:hover {
+
+    border-color: rgba(217,164,65,.35);
+
+    color: var(--gold-light);
+}
+
+.hero-mini-stats {
+
+    display: flex;
+
+    gap: 45px;
+
+    margin-top: 60px;
+}
+
+.hero-mini-stats div {
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+.hero-mini-stats strong {
+
+    color: var(--white);
+
+    font-size: 21px;
+}
+
+.hero-mini-stats span {
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.hero-chess-piece {
+
+    position: absolute;
+
+    right: 10%;
+
+    top: 50%;
+
+    transform: translateY(-45%);
+
+    font-size: min(40vw, 430px);
+
+    line-height: 1;
+
+    color: rgba(217,164,65,.055);
+
+    text-shadow:
+        0 0 100px rgba(217,164,65,.1);
+
+    user-select: none;
+
+    pointer-events: none;
+}
+
+
+/* =========================================================
+   SECTIONS
+========================================================= */
+
+.section {
+
+    max-width: var(--max-width);
+
+    margin: auto;
+
+    padding: 110px 24px;
+}
+
+.section-heading {
+
+    max-width: 680px;
+
+    margin-bottom: 45px;
+}
+
+.section-heading.centered {
+
+    margin-left: auto;
+    margin-right: auto;
+
+    text-align: center;
+}
+
+.eyebrow {
+
+    display: inline-block;
+
+    margin-bottom: 13px;
+
+    color: var(--gold);
+
+    font-size: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 3px;
+}
+
+.section-heading h2 {
+
+    font-family: "Playfair Display", serif;
+
+    font-size: clamp(
+        35px,
+        5vw,
+        55px
+    );
+
+    line-height: 1.05;
+
+    color: var(--white);
+}
+
+.section-heading h2 span {
+
+    color: var(--gold-light);
+}
+
+.section-heading p {
+
+    margin-top: 15px;
+
+    color: var(--muted);
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ABOUT
+========================================================= */
+
+.about-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+}
+
+.about-card {
+
+    padding: 28px;
+
+    min-height: 245px;
+
+    border: 1px solid var(--border);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.035),
+            rgba(255,255,255,.012)
+        );
+
+    border-radius: var(--radius);
+
+    transition: .3s;
+}
+
+.about-card:hover {
+
+    transform: translateY(-6px);
+
+    border-color:
+        rgba(217,164,65,.28);
+}
+
+.about-card.featured {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(217,164,65,.12),
+            rgba(217,164,65,.025)
+        );
+}
+
+.card-icon {
+
+    font-size: 29px;
+
+    color: var(--gold-light);
+
+    margin-bottom: 35px;
+}
+
+.about-card h3 {
+
+    color: var(--white);
+
+    font-size: 18px;
+
+    margin-bottom: 10px;
+}
+
+.about-card p {
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+.stats-section {
+
+    padding: 110px 24px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #0a0a0e,
+            #111116
+        );
+
+    border-top: 1px solid var(--border);
+
+    border-bottom: 1px solid var(--border);
+}
+
+.stats-grid {
+
+    max-width: var(--max-width);
+
+    margin: 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 15px;
+}
+
+.stat-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+    padding: 25px;
+
+    border: 1px solid var(--border);
+
+    background: rgba(255,255,255,.025);
+
+    border-radius: 15px;
+}
+
+.stat-icon {
+
+    width: 50px;
+    height: 50px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+
+    color: var(--gold-light);
+
+    background:
+        rgba(217,164,65,.08);
+
+    font-size: 23px;
+}
+
+.stat-card strong {
+
+    display: block;
+
+    color: var(--white);
+
+    font-size: 27px;
+}
+
+.stat-card span {
+
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 1px;
+}
+
+.api-status {
+
+    max-width: var(--max-width);
+
+    margin: 20px auto 0;
+
+    text-align: center;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.status-dot {
+
+    width: 7px;
+    height: 7px;
+
+    display: inline-block;
+
+    margin-right: 7px;
+
+    border-radius: 50%;
+
+    background: #5fd38b;
+
+    box-shadow:
+        0 0 10px rgba(95,211,139,.6);
+}
+
+
+/* =========================================================
+   MEMBERS
+========================================================= */
+
+.members-toolbar {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-bottom: 25px;
+}
+
+.search-box {
+
+    flex: 1;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 0 16px;
+
+    height: 50px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    background: rgba(255,255,255,.025);
+}
+
+.search-box span {
+
+    font-size: 22px;
+
+    color: var(--muted);
+}
+
+.search-box input {
+
+    width: 100%;
+
+    height: 100%;
+
+    border: 0;
+
+    outline: none;
+
+    background: transparent;
+
+    color: white;
+}
+
+.search-box input::placeholder {
+
+    color: #666670;
+}
+
+.refresh-button {
+
+    border: 1px solid var(--border);
+
+    background: rgba(255,255,255,.03);
+
+    color: var(--gold-light);
+
+    border-radius: 10px;
+
+    padding: 0 18px;
+
+    transition: .2s;
+}
+
+.refresh-button:hover {
+
+    border-color: rgba(217,164,65,.4);
+
+    background: rgba(217,164,65,.07);
+}
+
+.members-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 12px;
+}
+
+.member-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 14px;
+
+    border-radius: 13px;
+
+    border: 1px solid var(--border);
+
+    background: rgba(255,255,255,.025);
+
+    transition: .2s;
+}
+
+.member-card:hover {
+
+    transform: translateY(-3px);
+
+    border-color:
+        rgba(217,164,65,.3);
+}
+
+.member-avatar {
+
+    width: 43px;
+    height: 43px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    display: grid;
+    place-items: center;
+
+    background:
+        linear-gradient(
+            145deg,
+            #e5be64,
+            #6e4b16
+        );
+
+    color: #111;
+
+    font-weight: 900;
+
+    overflow: hidden;
+}
+
+.member-avatar img {
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+}
+
+.member-name {
+
+    color: var(--white);
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.member-label {
+
+    color: var(--muted);
+
+    font-size: 10px;
+}
+
+.loading-card {
+
+    grid-column: 1 / -1;
+
+    min-height: 180px;
+
+    display: grid;
+
+    place-items: center;
+
+    text-align: center;
+
+    border: 1px solid var(--border);
+
+    border-radius: 15px;
+
+    color: var(--muted);
+}
+
+.loader {
+
+    width: 30px;
+    height: 30px;
+
+    margin: auto;
+
+    border-radius: 50%;
+
+    border: 3px solid rgba(255,255,255,.1);
+
+    border-top-color: var(--gold);
+
+    animation:
+        spin .8s linear infinite;
+}
+
+@keyframes spin {
+
+    to {
+        transform: rotate(360deg);
     }
-);
 
+}
 
-/* =========================================================
-   YEAR
-========================================================= */
+.members-footer {
 
-if (currentYear) {
+    margin-top: 20px;
 
-    currentYear.textContent =
-        new Date().getFullYear();
+    display: flex;
 
+    justify-content: space-between;
+
+    gap: 15px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.members-footer a {
+
+    color: var(--gold-light);
 }
 
 
 /* =========================================================
-   INITIAL LOAD
+   TEAM
 ========================================================= */
 
-async function init() {
+.team-section {
 
-    console.log(
-        "♛ The Crown Chess Society V1.5"
+    max-width: none;
+
+    padding-left: max(
+        24px,
+        calc((100vw - var(--max-width)) / 2)
     );
 
-    await Promise.all([
-        loadClub(),
-        loadMembers(),
-        loadMatches()
-    ]);
+    padding-right: max(
+        24px,
+        calc((100vw - var(--max-width)) / 2)
+    );
 
+    background:
+        radial-gradient(
+            circle at 50% 30%,
+            rgba(217,164,65,.06),
+            transparent 45%
+        );
+}
+
+.team-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 13px;
+}
+
+.team-card {
+
+    position: relative;
+
+    padding: 25px;
+
+    min-height: 220px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 15px;
+
+    background: rgba(255,255,255,.025);
+
+    transition: .3s;
+}
+
+.team-card:hover {
+
+    transform: translateY(-5px);
+
+    border-color:
+        rgba(217,164,65,.3);
+}
+
+.team-card.owner {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(217,164,65,.14),
+            rgba(217,164,65,.02)
+        );
+
+    border-color:
+        rgba(217,164,65,.25);
+}
+
+.team-crown {
+
+    color: var(--gold-light);
+
+    font-size: 27px;
+
+    margin-bottom: 25px;
+}
+
+.team-role {
+
+    color: var(--gold);
+
+    font-size: 9px;
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 7px;
+}
+
+.team-card h3 {
+
+    color: var(--white);
+
+    font-size: 15px;
+
+    word-break: break-word;
+}
+
+.team-card p {
+
+    color: var(--muted);
+
+    font-size: 11px;
+
+    margin-top: 3px;
+}
+
+.team-card a {
+
+    position: absolute;
+
+    bottom: 22px;
+
+    color: var(--gold-light);
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+.coordinators {
+
+    margin-top: 50px;
+
+    padding-top: 30px;
+
+    border-top: 1px solid var(--border);
+}
+
+.coordinators h3 {
+
+    color: var(--white);
+
+    margin-bottom: 15px;
+
+    font-size: 17px;
+}
+
+.coordinator-list {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+}
+
+.coordinator-list a {
+
+    padding: 10px 14px;
+
+    border-radius: 9px;
+
+    background: rgba(255,255,255,.03);
+
+    border: 1px solid var(--border);
+
+    color: #ccc;
+
+    font-size: 12px;
+
+    transition: .2s;
+}
+
+.coordinator-list a:hover {
+
+    color: var(--gold-light);
+
+    border-color:
+        rgba(217,164,65,.3);
 }
 
 
-init();
+/* =========================================================
+   EVENTS
+========================================================= */
+
+.events-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 15px;
+}
+
+.event-card {
+
+    display: flex;
+
+    gap: 18px;
+
+    padding: 22px;
+
+    border: 1px solid var(--border);
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.035),
+            rgba(255,255,255,.01)
+        );
+}
+
+.event-date {
+
+    width: 55px;
+
+    height: 65px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    border-radius: 10px;
+
+    background:
+        rgba(217,164,65,.1);
+
+    color: var(--gold-light);
+}
+
+.event-date span {
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+}
+
+.event-date strong {
+
+    font-size: 23px;
+}
+
+.event-type {
+
+    color: var(--gold);
+
+    font-size: 8px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.5px;
+}
+
+.event-info h3 {
+
+    margin-top: 5px;
+
+    color: var(--white);
+
+    font-size: 16px;
+}
+
+.event-info p {
+
+    margin-top: 7px;
+
+    color: var(--muted);
+
+    font-size: 11px;
+}
+
+.event-info a {
+
+    display: inline-block;
+
+    margin-top: 13px;
+
+    color: var(--gold-light);
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   ROADMAP
+========================================================= */
+
+.roadmap-section {
+
+    padding: 110px 24px;
+
+    border-top: 1px solid var(--border);
+
+    background: #0c0c10;
+}
+
+.timeline {
+
+    max-width: 850px;
+
+    margin: auto;
+}
+
+.timeline-item {
+
+    position: relative;
+
+    display: grid;
+
+    grid-template-columns: 70px 1fr;
+
+    gap: 25px;
+
+    padding-bottom: 35px;
+}
+
+.timeline-item:not(:last-child)::after {
+
+    content: "";
+
+    position: absolute;
+
+    left: 35px;
+
+    top: 70px;
+
+    width: 1px;
+
+    height: calc(100% - 50px);
+
+    background: var(--border);
+}
+
+.timeline-number {
+
+    width: 70px;
+    height: 70px;
+
+    display: grid;
+    place-items: center;
+
+    border: 1px solid var(--border);
+
+    border-radius: 50%;
+
+    color: var(--muted);
+
+    background: var(--surface);
+
+    font-weight: 800;
+
+    font-size: 12px;
+
+    position: relative;
+
+    z-index: 2;
+}
+
+.timeline-item.active .timeline-number {
+
+    border-color: rgba(217,164,65,.5);
+
+    color: var(--gold-light);
+
+    background:
+        rgba(217,164,65,.08);
+}
+
+.timeline-item h3 {
+
+    color: var(--white);
+
+    font-size: 20px;
+
+    margin-top: 8px;
+}
+
+.timeline-item p {
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+
+/* =========================================================
+   CTA
+========================================================= */
+
+.cta-section {
+
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 120px 24px;
+
+    text-align: center;
+
+    border-top: 1px solid var(--border);
+
+    background:
+
+        radial-gradient(
+            circle at center,
+            rgba(217,164,65,.13),
+            transparent 45%
+        );
+}
+
+.cta-crown {
+
+    font-size: 65px;
+
+    color: var(--gold-light);
+
+    opacity: .85;
+
+    margin-bottom: 20px;
+}
+
+.cta-section h2 {
+
+    max-width: 700px;
+
+    margin: auto;
+
+    font-family: "Playfair Display", serif;
+
+    font-size: clamp(
+        40px,
+        6vw,
+        70px
+    );
+
+    line-height: 1;
+
+    color: var(--white);
+}
+
+.cta-section h2 span {
+
+    color: var(--gold-light);
+}
+
+.cta-section p {
+
+    max-width: 550px;
+
+    margin: 18px auto 28px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+}
+
+.button.large {
+
+    min-height: 54px;
+
+    padding: 0 26px;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+
+    padding: 55px 24px 25px;
+
+    background: #060608;
+
+    border-top: 1px solid var(--border);
+}
+
+.footer-main {
+
+    max-width: var(--max-width);
+
+    margin: auto;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 50px;
+}
+
+.footer-brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+}
+
+.footer-logo {
+
+    width: 48px;
+    height: 48px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+
+    color: #111;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f1ca6d,
+            #94651a
+        );
+
+    font-size: 27px;
+}
+
+.footer-brand h3 {
+
+    color: var(--white);
+
+    font-size: 13px;
+
+    letter-spacing: 2px;
+}
+
+.footer-brand h3 span {
+
+    display: block;
+
+    color: var(--gold);
+
+    font-size: 9px;
+
+    letter-spacing: 3px;
+}
+
+.footer-brand p {
+
+    color: #65656d;
+
+    font-size: 10px;
+
+    margin-top: 3px;
+}
+
+.footer-links {
+
+    display: flex;
+
+    gap: 80px;
+}
+
+.footer-links div {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.footer-links h4 {
+
+    color: var(--white);
+
+    font-size: 11px;
+
+    margin-bottom: 4px;
+}
+
+.footer-links a {
+
+    color: #6e6e76;
+
+    font-size: 10px;
+
+    transition: .2s;
+}
+
+.footer-links a:hover {
+
+    color: var(--gold-light);
+}
+
+.footer-bottom {
+
+    max-width: var(--max-width);
+
+    margin: 45px auto 0;
+
+    padding-top: 20px;
+
+    border-top: 1px solid rgba(255,255,255,.06);
+
+    display: flex;
+
+    justify-content: space-between;
+
+    color: #55555d;
+
+    font-size: 9px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1000px) {
+
+    .about-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .stats-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .members-grid {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+    .team-grid {
+
+        grid-template-columns:
+            repeat(3, 1fr);
+    }
+
+    .events-grid {
+
+        grid-template-columns:
+            1fr;
+    }
+
+    .hero-chess-piece {
+
+        right: -5%;
+
+        opacity: .6;
+    }
+}
+
+
+@media (max-width: 750px) {
+
+    .nav-links,
+    .nav-button {
+
+        display: none;
+    }
+
+    .menu-button {
+
+        display: block;
+    }
+
+    .hero {
+
+        min-height: 780px;
+
+        padding-top: 120px;
+    }
+
+    .hero h1 {
+
+        letter-spacing: -2px;
+    }
+
+    .hero-chess-piece {
+
+        right: -15%;
+
+        top: 65%;
+
+        font-size: 350px;
+
+        opacity: .25;
+    }
+
+    .hero-mini-stats {
+
+        gap: 25px;
+    }
+
+    .members-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .team-grid {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .footer-main {
+
+        flex-direction: column;
+    }
+
+    .footer-links {
+
+        gap: 50px;
+    }
+}
+
+
+@media (max-width: 520px) {
+
+    .nav-inner {
+
+        padding: 0 16px;
+    }
+
+    .brand-name {
+
+        font-size: 12px;
+    }
+
+    .brand-sub {
+
+        font-size: 8px;
+    }
+
+    .section,
+    .stats-section,
+    .roadmap-section {
+
+        padding-top: 80px;
+
+        padding-bottom: 80px;
+    }
+
+    .about-grid,
+    .stats-grid,
+    .members-grid,
+    .team-grid {
+
+        grid-template-columns: 1fr;
+    }
+
+    .hero {
+
+        min-height: 720px;
+
+        padding-left: 20px;
+
+        padding-right: 20px;
+    }
+
+    .hero-description {
+
+        font-size: 14px;
+    }
+
+    .hero-mini-stats {
+
+        margin-top: 40px;
+    }
+
+    .members-toolbar {
+
+        flex-direction: column;
+    }
+
+    .refresh-button {
+
+        height: 48px;
+    }
+
+    .members-footer {
+
+        flex-direction: column;
+    }
+
+    .footer-bottom {
+
+        flex-direction: column;
+
+        gap: 8px;
+    }
+
+    .footer-links {
+
+        gap: 40px;
+    }
+
+}
