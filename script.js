@@ -1,1486 +1,703 @@
-/* =========================================================
-   THE CROWN CHESS SOCIETY
-   V2 — LIVE CHESS.COM SYSTEM
-========================================================= */
-
-
-const CLUB_SLUG =
-    "the-crown-chess-society";
-
+const CLUB = "the-crown-chess-society";
 
 const API = {
-
-    club:
-        `https://api.chess.com/pub/club/${CLUB_SLUG}`,
-
-    members:
-        `https://api.chess.com/pub/club/${CLUB_SLUG}/members`,
-
-    matches:
-        `https://api.chess.com/pub/club/${CLUB_SLUG}/matches`
-
+  club: `https://api.chess.com/pub/club/${CLUB}`,
+  members: `https://api.chess.com/pub/club/${CLUB}/members`,
+  matches: `https://api.chess.com/pub/club/${CLUB}/matches`
 };
-
 
 const CHESS_CLUB =
-    "https://www.chess.com/club/the-crown-chess-society";
+  "https://www.chess.com/club/the-crown-chess-society";
 
-
-/* =========================================================
-   DOM
-========================================================= */
-
-const $ = id =>
-    document.getElementById(id);
-
-
-const memberCount =
-    $("memberCount");
-
-const liveCount =
-    $("liveCount");
-
-const upcomingCount =
-    $("upcomingCount");
-
-const finishedCount =
-    $("finishedCount");
-
-
-const heroMembers =
-    $("heroMembers");
-
-const heroLive =
-    $("heroLive");
-
-
-const membersGrid =
-    $("membersGrid");
-
-const memberSearch =
-    $("memberSearch");
-
-const memberResultText =
-    $("memberResultText");
-
-
-const teamGrid =
-    $("teamGrid");
-
-
-const eventsGrid =
-    $("eventsGrid");
-
-const eventsStatus =
-    $("eventsStatus");
-
-
-const apiStatus =
-    $("apiStatus");
-
-
-const refreshButton =
-    $("refreshButton");
-
-
-const menuButton =
-    $("menuButton");
-
-const mobileMenu =
-    $("mobileMenu");
-
-
-const currentYear =
-    $("currentYear");
-
-
-/* =========================================================
-   STATE
-========================================================= */
-
-let allMembers = [];
-
-let currentMatches = {
-
-    registered: [],
-
-    in_progress: [],
-
-    finished: []
-
+let members = [];
+let matches = {
+  registered: [],
+  in_progress: [],
+  finished: []
 };
 
 
-/* =========================================================
+/* =========================
    HELPERS
-========================================================= */
+========================= */
 
-function formatNumber(value) {
+const $ = id =>
+  document.getElementById(id);
 
-    if (
-        value === undefined ||
-        value === null ||
-        Number.isNaN(Number(value))
-    ) {
+function escapeHTML(text) {
 
-        return "—";
+  const div = document.createElement("div");
 
-    }
+  div.textContent = text ?? "";
 
-    return Number(value)
-        .toLocaleString("en-US");
+  return div.innerHTML;
+}
+
+function number(value) {
+
+  return Number(value || 0)
+    .toLocaleString("en-US");
 
 }
 
+function usernameFromURL(url) {
 
-function escapeHTML(value) {
+  if (!url) return null;
 
-    const div =
-        document.createElement("div");
+  try {
 
-    div.textContent =
-        value ?? "";
+    const u = new URL(url);
 
-    return div.innerHTML;
+    const parts =
+      u.pathname
+        .split("/")
+        .filter(Boolean);
 
-}
+    return parts.at(-1);
 
+  } catch {
 
-function getUsernameFromURL(url) {
+    return null;
 
-    if (!url) {
-        return null;
-    }
-
-    try {
-
-        const parsed =
-            new URL(url);
-
-        const parts =
-            parsed.pathname
-                .split("/")
-                .filter(Boolean);
-
-        return (
-            parts[parts.length - 1] ||
-            null
-        );
-
-    } catch {
-
-        return null;
-
-    }
+  }
 
 }
 
+async function getJSON(url) {
 
-function getInitial(username) {
-
-    return (
-        username
-            ?.charAt(0)
-            ?.toUpperCase() ||
-        "?"
+  const response =
+    await fetch(
+      url,
+      {
+        cache: "no-store"
+      }
     );
 
-}
+  if (!response.ok) {
 
-
-function formatDate(timestamp) {
-
-    if (!timestamp) {
-
-        return "Time unavailable";
-
-    }
-
-    return new Date(
-        timestamp * 1000
-    ).toLocaleString(
-        "en-GB",
-        {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
-        }
+    throw new Error(
+      `${response.status}`
     );
 
-}
+  }
 
-
-function getMatchURL(match) {
-
-    return (
-        match.url ||
-        match["@id"] ||
-        "https://www.chess.com/clubs/matches/open"
-    );
+  return response.json();
 
 }
 
 
-/* =========================================================
-   API STATUS
-========================================================= */
-
-function setAPIStatus(
-    message,
-    online = true
-) {
-
-    apiStatus.innerHTML = `
-
-        <span
-            class="status-dot"
-            style="
-                background:
-                    ${online
-                        ? "#5fd38b"
-                        : "#d86b6b"};
-
-                box-shadow:
-                    0 0 10px
-                    ${
-                        online
-                            ? "rgba(95,211,139,.6)"
-                            : "rgba(216,107,107,.5)"
-                    };
-            "
-        ></span>
-
-        ${escapeHTML(message)}
-
-    `;
-
-}
-
-
-/* =========================================================
-   FETCH
-========================================================= */
-
-async function fetchJSON(url) {
-
-    const response =
-        await fetch(
-            url,
-            {
-                method: "GET",
-
-                headers: {
-                    "Accept":
-                        "application/json"
-                },
-
-                cache: "no-store"
-            }
-        );
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            `${response.status} ${response.statusText}`
-        );
-
-    }
-
-
-    return response.json();
-
-}
-
-
-/* =========================================================
-   LOAD CLUB
-========================================================= */
+/* =========================
+   CLUB
+========================= */
 
 async function loadClub() {
 
-    try {
+  try {
 
-        const data =
-            await fetchJSON(
-                API.club
-            );
+    const data =
+      await getJSON(API.club);
 
+    const count =
+      data.members_count || 0;
 
-        /* -----------------------------------------
-           MEMBERS COUNT
-        ----------------------------------------- */
+    $("membersCount").textContent =
+      number(count);
 
-        const members =
-            Number(
-                data.members_count ??
-                0
-            );
+    $("heroMembers").textContent =
+      number(count);
 
+    $("apiStatus").innerHTML =
+      `<span class="green-dot"></span>
+       Chess.com connected`;
 
-        memberCount.textContent =
-            formatNumber(
-                members
-            );
+    renderAdmins(
+      data.admin || []
+    );
 
+  } catch(error) {
 
-        heroMembers.textContent =
-            formatNumber(
-                members
-            );
+    console.error(error);
 
+    $("apiStatus").textContent =
+      "Chess.com API unavailable";
 
-        /* -----------------------------------------
-           ADMIN
-        ----------------------------------------- */
+    renderAdmins([]);
 
-        renderAdmins(
-            data.admin || []
-        );
-
-
-        /* -----------------------------------------
-           STATUS
-        ----------------------------------------- */
-
-        setAPIStatus(
-            "Live data connected to Chess.com",
-            true
-        );
-
-
-    } catch(error) {
-
-        console.error(
-            "Club API:",
-            error
-        );
-
-
-        memberCount.textContent =
-            "—";
-
-
-        heroMembers.textContent =
-            "—";
-
-
-        renderAdmins([]);
-
-
-        setAPIStatus(
-            "Chess.com data temporarily unavailable",
-            false
-        );
-
-    }
+  }
 
 }
 
 
-/* =========================================================
-   RENDER ADMINS
-========================================================= */
+/* =========================
+   ADMINS
+========================= */
 
-function renderAdmins(
+function renderAdmins(admins) {
+
+  const grid =
+    $("adminGrid");
+
+  if (!admins.length) {
+
+    grid.innerHTML = `
+      <div class="loading">
+        Administration unavailable.
+        <br><br>
+        <a
+          href="${CHESS_CLUB}"
+          target="_blank"
+          style="color:#f4cf73"
+        >
+          View Chess.com Club →
+        </a>
+      </div>
+    `;
+
+    return;
+
+  }
+
+  const names =
     admins
-) {
+      .map(item => {
 
-    if (!teamGrid) {
-        return;
-    }
+        if (
+          typeof item === "string"
+        ) {
 
+          return (
+            usernameFromURL(item) ||
+            item
+          );
 
-    if (!admins.length) {
+        }
 
-        teamGrid.innerHTML = `
+        return item.username;
 
-            <article class="team-card">
-
-                <div class="team-crown">
-                    ♛
-                </div>
-
-                <div class="team-role">
-                    CLUB ADMINISTRATION
-                </div>
-
-                <h3>
-                    The Crown Team
-                </h3>
-
-                <p>
-                    Open Chess.com club page
-                    for current administration.
-                </p>
-
-                <a
-                    href="${CHESS_CLUB}"
-                    target="_blank"
-                    rel="noopener"
-                >
-                    View on Chess.com →
-                </a>
-
-            </article>
-
-        `;
-
-        return;
-
-    }
+      })
+      .filter(Boolean);
 
 
-    const adminUsernames =
-        admins
-            .map(
-                item =>
-                    typeof item === "string"
-                        ? getUsernameFromURL(item) || item
-                        : item.username
-            )
-            .filter(Boolean);
+  const unique =
+    [...new Set(names)];
 
 
-    const unique =
-        [...new Set(adminUsernames)];
+  grid.innerHTML =
+    unique.map(name => {
 
+      const safe =
+        escapeHTML(name);
 
-    teamGrid.innerHTML =
-        unique
-            .map(
-                username => {
+      const profile =
+        `https://www.chess.com/member/${encodeURIComponent(name)}`;
 
-                    const safe =
-                        escapeHTML(
-                            username
-                        );
+      return `
+        <article class="admin">
 
+          <div class="admin-icon">
+            ♛
+          </div>
 
-                    const profile =
-                        `https://www.chess.com/member/${encodeURIComponent(username)}`;
+          <div class="admin-role">
+            CLUB ADMIN
+          </div>
 
+          <h3>
+            ${safe}
+          </h3>
 
-                    return `
+          <p>
+            The Crown Chess Society
+          </p>
 
-                        <article
-                            class="team-card"
-                        >
+          <a
+            href="${profile}"
+            target="_blank"
+          >
+            Chess.com Profile →
+          </a>
 
-                            <div class="team-crown">
-                                ♜
-                            </div>
+        </article>
+      `;
 
-                            <div class="team-role">
-                                ADMIN
-                            </div>
-
-                            <h3>
-                                ${safe}
-                            </h3>
-
-                            <p>
-                                Club Administration
-                            </p>
-
-                            <a
-                                href="${profile}"
-                                target="_blank"
-                                rel="noopener"
-                            >
-                                Chess.com Profile →
-                            </a>
-
-                        </article>
-
-                    `;
-
-                }
-            )
-            .join("");
+    }).join("");
 
 }
 
 
-/* =========================================================
-   LOAD MEMBERS
-========================================================= */
+/* =========================
+   MEMBERS
+========================= */
 
 async function loadMembers() {
 
-    membersGrid.innerHTML = `
+  const grid =
+    $("membersGrid");
 
-        <div class="loading-card">
+  grid.innerHTML =
+    `<div class="loading">
+      Loading members...
+    </div>`;
 
-            <div>
+  try {
 
-                <div class="loader"></div>
+    const data =
+      await getJSON(API.members);
 
-                <p>
-                    Updating members...
-                </p>
+    const combined = [
 
-            </div>
+      ...(data.weekly || []),
+      ...(data.monthly || []),
+      ...(data.all_time || [])
 
-        </div>
+    ];
 
-    `;
+    const unique =
+      new Map();
 
+    combined.forEach(member => {
 
-    try {
+      const name =
+        typeof member === "string"
+          ? member
+          : member.username;
 
-        const data =
-            await fetchJSON(
-                API.members
-            );
+      if (!name) return;
 
+      unique.set(
+        name.toLowerCase(),
+        name
+      );
 
-        /*
-         * The endpoint returns:
-         *
-         * weekly
-         * monthly
-         * all_time
-         *
-         * Each item contains username + joined.
-         */
+    });
 
-
-        const combined = [
-
-            ...(data.weekly || []),
-
-            ...(data.monthly || []),
-
-            ...(data.all_time || [])
-
-        ];
-
-
-        const unique =
-            new Map();
-
-
-        combined.forEach(
-            member => {
-
-                const username =
-                    typeof member === "string"
-                        ? member
-                        : member.username;
-
-
-                if (!username) {
-                    return;
-                }
-
-
-                unique.set(
-                    username.toLowerCase(),
-                    username
-                );
-
-            }
-        );
-
-
-        allMembers =
-            Array.from(
-                unique.values()
-            );
-
-
-        allMembers.sort(
-            (a,b) =>
-                a.localeCompare(
-                    b,
-                    undefined,
-                    {
-                        sensitivity:
-                            "base"
-                    }
-                )
-        );
-
-
-        renderMembers(
-            allMembers
-        );
-
-
-    } catch(error) {
-
-        console.error(
-            "Members API:",
-            error
-        );
-
-
-        membersGrid.innerHTML = `
-
-            <div class="loading-card">
-
-                <div>
-
-                    <div style="
-                        font-size:36px;
-                        color:#d9a441;
-                    ">
-                        ♟
-                    </div>
-
-                    <p>
-                        Member data unavailable.
-                    </p>
-
-                    <a
-                        href="${CHESS_CLUB}"
-                        target="_blank"
-                        rel="noopener"
-                        style="
-                            display:inline-block;
-                            margin-top:10px;
-                            color:#f2c96b;
-                        "
-                    >
-                        Open Chess.com →
-                    </a>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        memberResultText.textContent =
-            "Live member data unavailable.";
-
-    }
-
-}
-
-
-/* =========================================================
-   RENDER MEMBERS
-========================================================= */
-
-function renderMembers(
-    members
-) {
-
-    const limit = 48;
-
-
-    const visible =
-        members.slice(
-            0,
-            limit
-        );
-
-
-    if (!visible.length) {
-
-        membersGrid.innerHTML = `
-
-            <div class="loading-card">
-
-                <div>
-
-                    <div style="
-                        font-size:36px;
-                        color:#d9a441;
-                    ">
-                        ♟
-                    </div>
-
-                    <p>
-                        No members found.
-                    </p>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        memberResultText.textContent =
-            "0 members.";
-
-        return;
-
-    }
-
-
-    membersGrid.innerHTML =
-        visible
-            .map(
-                username => {
-
-                    const safe =
-                        escapeHTML(
-                            username
-                        );
-
-
-                    const profile =
-                        `https://www.chess.com/member/${encodeURIComponent(username)}`;
-
-
-                    return `
-
-                        <a
-                            class="member-card"
-                            href="${profile}"
-                            target="_blank"
-                            rel="noopener"
-                        >
-
-                            <div class="member-avatar">
-
-                                ${escapeHTML(
-                                    getInitial(
-                                        username
-                                    )
-                                )}
-
-                            </div>
-
-
-                            <div
-                                style="
-                                    min-width:0
-                                "
-                            >
-
-                                <div
-                                    class="member-name"
-                                >
-                                    ${safe}
-                                </div>
-
-                                <div
-                                    class="member-label"
-                                >
-                                    Chess.com Member
-                                </div>
-
-                            </div>
-
-                        </a>
-
-                    `;
-
-                }
+    members =
+      [...unique.values()]
+        .sort(
+          (a,b) =>
+            a.localeCompare(
+              b,
+              undefined,
+              {
+                sensitivity: "base"
+              }
             )
-            .join("");
+        );
 
+    renderMembers(members);
 
-    memberResultText.textContent =
+  } catch(error) {
 
-        members.length > limit
+    console.error(error);
 
-            ? `Showing ${formatNumber(limit)} of ${formatNumber(members.length)} members.`
+    grid.innerHTML =
+      `<div class="loading">
+        Unable to load members.
+        <br><br>
+        <a
+          href="${CHESS_CLUB}"
+          target="_blank"
+          style="color:#f4cf73"
+        >
+          Open Chess.com →
+        </a>
+      </div>`;
 
-            : `${formatNumber(members.length)} members loaded.`;
+  }
 
 }
 
 
-/* =========================================================
-   LOAD MATCHES
-========================================================= */
+function renderMembers(list) {
+
+  const grid =
+    $("membersGrid");
+
+  const shown =
+    list.slice(0,48);
+
+  if (!shown.length) {
+
+    grid.innerHTML =
+      `<div class="loading">
+        No members found.
+      </div>`;
+
+    $("memberInfo").textContent =
+      "0 members.";
+
+    return;
+
+  }
+
+  grid.innerHTML =
+    shown.map(name => {
+
+      const safe =
+        escapeHTML(name);
+
+      const profile =
+        `https://www.chess.com/member/${encodeURIComponent(name)}`;
+
+      const initial =
+        escapeHTML(
+          name.charAt(0).toUpperCase()
+        );
+
+      return `
+        <a
+          class="member"
+          href="${profile}"
+          target="_blank"
+        >
+
+          <div class="avatar">
+            ${initial}
+          </div>
+
+          <div>
+            <div class="member-name">
+              ${safe}
+            </div>
+
+            <div class="member-sub">
+              Chess.com Member
+            </div>
+          </div>
+
+        </a>
+      `;
+
+    }).join("");
+
+  $("memberInfo").textContent =
+    list.length > 48
+      ? `Showing 48 of ${number(list.length)} members.`
+      : `${number(list.length)} members loaded.`;
+
+}
+
+
+/* =========================
+   MATCHES
+========================= */
 
 async function loadMatches() {
 
-    eventsGrid.innerHTML = `
+  const grid =
+    $("matchesGrid");
 
-        <div class="loading-card">
+  try {
 
-            <div>
+    const data =
+      await getJSON(API.matches);
 
-                <div class="loader"></div>
+    matches = {
 
-                <p>
-                    Loading live matches...
-                </p>
+      registered:
+        data.registered || [],
 
-            </div>
+      in_progress:
+        data.in_progress || [],
 
-        </div>
+      finished:
+        data.finished || []
 
-    `;
+    };
 
+    $("liveCount").textContent =
+      number(matches.in_progress.length);
 
-    try {
+    $("upcomingCount").textContent =
+      number(matches.registered.length);
 
-        const data =
-            await fetchJSON(
-                API.matches
-            );
+    $("finishedCount").textContent =
+      number(matches.finished.length);
 
+    $("heroLive").textContent =
+      number(matches.in_progress.length);
 
-        currentMatches = {
+    renderMatches();
 
-            registered:
-                Array.isArray(
-                    data.registered
-                )
-                    ? data.registered
-                    : [],
+  } catch(error) {
 
+    console.error(error);
 
-            in_progress:
-                Array.isArray(
-                    data.in_progress
-                )
-                    ? data.in_progress
-                    : [],
+    $("liveCount").textContent = "—";
+    $("upcomingCount").textContent = "—";
+    $("finishedCount").textContent = "—";
+    $("heroLive").textContent = "—";
 
+    grid.innerHTML =
+      `<div class="loading">
+        Match data unavailable.
+        <br><br>
+        <a
+          href="https://www.chess.com/clubs/matches/open"
+          target="_blank"
+          style="color:#f4cf73"
+        >
+          Open Chess.com Matches →
+        </a>
+      </div>`;
 
-            finished:
-                Array.isArray(
-                    data.finished
-                )
-                    ? data.finished
-                    : []
-
-        };
-
-
-        /* -----------------------------------------
-           STATS
-        ----------------------------------------- */
-
-        const live =
-            currentMatches
-                .in_progress.length;
-
-
-        const upcoming =
-            currentMatches
-                .registered.length;
-
-
-        const finished =
-            currentMatches
-                .finished.length;
-
-
-        liveCount.textContent =
-            formatNumber(
-                live
-            );
-
-
-        upcomingCount.textContent =
-            formatNumber(
-                upcoming
-            );
-
-
-        finishedCount.textContent =
-            formatNumber(
-                finished
-            );
-
-
-        heroLive.textContent =
-            formatNumber(
-                live
-            );
-
-
-        /* -----------------------------------------
-           EVENTS
-        ----------------------------------------- */
-
-        renderMatches();
-
-
-    } catch(error) {
-
-        console.error(
-            "Matches API:",
-            error
-        );
-
-
-        liveCount.textContent =
-            "—";
-
-
-        upcomingCount.textContent =
-            "—";
-
-
-        finishedCount.textContent =
-            "—";
-
-
-        heroLive.textContent =
-            "—";
-
-
-        eventsGrid.innerHTML = `
-
-            <div class="loading-card">
-
-                <div>
-
-                    <div style="
-                        font-size:36px;
-                        color:#d9a441;
-                    ">
-                        ⚔
-                    </div>
-
-                    <p>
-                        Match data unavailable.
-                    </p>
-
-                    <a
-                        href="https://www.chess.com/clubs/matches/open"
-                        target="_blank"
-                        rel="noopener"
-                        style="
-                            display:inline-block;
-                            margin-top:10px;
-                            color:#f2c96b;
-                        "
-                    >
-                        Open Chess.com Matches →
-                    </a>
-
-                </div>
-
-            </div>
-
-        `;
-
-
-        eventsStatus.textContent =
-            "Unable to load live match data.";
-
-    }
+  }
 
 }
 
-
-/* =========================================================
-   RENDER MATCHES
-========================================================= */
 
 function renderMatches() {
 
-    const live =
-        currentMatches.in_progress
-            .map(
-                match => ({
-                    ...match,
-                    crownStatus: "LIVE"
-                })
-            );
+  const grid =
+    $("matchesGrid");
+
+  let list = [
+
+    ...matches.in_progress.map(x => ({
+      ...x,
+      status: "LIVE"
+    })),
+
+    ...matches.registered.map(x => ({
+      ...x,
+      status: "UPCOMING"
+    }))
+
+  ];
 
 
-    const upcoming =
-        currentMatches.registered
-            .map(
-                match => ({
-                    ...match,
-                    crownStatus: "UPCOMING"
-                })
-            );
+  if (!list.length) {
+
+    list =
+      matches.finished
+        .slice(0,6)
+        .map(x => ({
+          ...x,
+          status: "FINISHED"
+        }));
+
+  }
 
 
-    const active = [
-        ...live,
-        ...upcoming
-    ];
+  if (!list.length) {
+
+    grid.innerHTML =
+      `<div class="loading">
+        ♛
+        <br><br>
+        No active matches right now.
+      </div>`;
+
+    return;
+
+  }
 
 
-    /*
-     * If nothing is currently live/upcoming,
-     * show recent finished matches instead.
-     */
+  grid.innerHTML =
+    list.slice(0,12).map(match => {
+
+      const name =
+        escapeHTML(
+          match.name || "Club Match"
+        );
+
+      const opponent =
+        escapeHTML(
+          usernameFromURL(
+            match.opponent
+          ) || "Opponent"
+        );
+
+      const url =
+        match.url ||
+        match["@id"] ||
+        "https://www.chess.com/clubs/matches/open";
+
+      const live =
+        match.status === "LIVE";
+
+      let date = "";
+
+      if (match.start_time) {
+
+        date =
+          new Date(
+            match.start_time * 1000
+          ).toLocaleString(
+            "vi-VN"
+          );
+
+      }
+
+      return `
+        <article class="match">
+
+          <div class="match-status ${live ? "live" : ""}">
+
+            <small>
+              ${match.status}
+            </small>
+
+            <strong>
+              ${live ? "⚡" : "♛"}
+            </strong>
+
+          </div>
+
+          <div>
+
+            <div class="match-type">
+              ${live
+                ? "LIVE CLUB MATCH"
+                : match.status === "UPCOMING"
+                  ? "UPCOMING MATCH"
+                  : "FINISHED MATCH"}
+            </div>
+
+            <h3>
+              ${name}
+            </h3>
+
+            <p>
+              Opponent:
+              <b>${opponent}</b>
+            </p>
+
+            <p>
+              ${date}
+            </p>
+
+            <a
+              href="${url}"
+              target="_blank"
+            >
+              ${live
+                ? "Watch Match →"
+                : "View Match →"}
+            </a>
+
+          </div>
+
+        </article>
+      `;
+
+    }).join("");
+
+}
 
 
-    if (!active.length) {
+/* =========================
+   SEARCH
+========================= */
 
-        const recent =
-            currentMatches.finished
-                .slice(0,6)
-                .map(
-                    match => ({
-                        ...match,
-                        crownStatus:
-                            "FINISHED"
-                    })
-                );
+$("memberSearch")
+  .addEventListener(
+    "input",
+    event => {
 
+      const query =
+        event.target.value
+          .trim()
+          .toLowerCase();
 
-        if (recent.length) {
+      if (!query) {
 
-            renderMatchCards(
-                recent
-            );
-
-
-            eventsStatus.textContent =
-                "No live matches right now • Showing recent finished matches.";
-
-            return;
-
-        }
-
-
-        eventsGrid.innerHTML = `
-
-            <article class="event-card">
-
-                <div class="event-date">
-
-                    <span>
-                        READY
-                    </span>
-
-                    <strong>
-                        ♛
-                    </strong>
-
-                </div>
-
-
-                <div class="event-info">
-
-                    <div class="event-type">
-                        NO ACTIVE MATCHES
-                    </div>
-
-                    <h3>
-                        The board is waiting.
-                    </h3>
-
-                    <p>
-                        There are currently no registered
-                        or in-progress matches.
-                    </p>
-
-                    <a
-                        href="${CHESS_CLUB}"
-                        target="_blank"
-                        rel="noopener"
-                    >
-                        Check The Crown →
-                    </a>
-
-                </div>
-
-            </article>
-
-        `;
-
-
-        eventsStatus.textContent =
-            "No active or upcoming matches.";
+        renderMembers(members);
 
         return;
 
-    }
-
-
-    renderMatchCards(
-        active
-    );
-
-
-    eventsStatus.textContent =
-        `${currentMatches.in_progress.length} live • ${currentMatches.registered.length} upcoming`;
-
-}
-
-
-/* =========================================================
-   MATCH CARDS
-========================================================= */
-
-function renderMatchCards(
-    matches
-) {
-
-    eventsGrid.innerHTML =
-        matches
-            .slice(0,12)
-            .map(
-                match => {
-
-                    const name =
-                        escapeHTML(
-                            match.name ||
-                            "Club Match"
-                        );
-
-
-                    const opponentURL =
-                        match.opponent ||
-                        "";
-
-
-                    const opponent =
-                        getUsernameFromURL(
-                            opponentURL
-                        ) ||
-                        "Opponent";
-
-
-                    const safeOpponent =
-                        escapeHTML(
-                            opponent
-                        );
-
-
-                    const status =
-                        match.crownStatus;
-
-
-                    const isLive =
-                        status === "LIVE";
-
-
-                    const isFinished =
-                        status === "FINISHED";
-
-
-                    const date =
-                        formatDate(
-                            match.start_time
-                        );
-
-
-                    const url =
-                        getMatchURL(
-                            match
-                        );
-
-
-                    return `
-
-                        <article
-                            class="event-card"
-                        >
-
-                            <div
-                                class="
-                                    event-date
-                                    ${isLive
-                                        ? "live"
-                                        : ""}
-                                "
-                            >
-
-                                <span>
-
-                                    ${
-                                        isLive
-                                            ? "LIVE NOW"
-                                            : status
-                                    }
-
-                                </span>
-
-
-                                <strong>
-
-                                    ${
-                                        isLive
-                                            ? "⚡"
-                                            : isFinished
-                                                ? "✓"
-                                                : "♛"
-                                    }
-
-                                </strong>
-
-                            </div>
-
-
-                            <div
-                                class="event-info"
-                            >
-
-                                <div
-                                    class="event-type"
-                                >
-
-                                    ${
-                                        isLive
-                                            ? "LIVE CLUB MATCH"
-                                            : isFinished
-                                                ? "FINISHED MATCH"
-                                                : "UPCOMING CLUB MATCH"
-                                    }
-
-                                </div>
-
-
-                                <h3>
-                                    ${name}
-                                </h3>
-
-
-                                <p>
-
-                                    Opponent:
-
-                                    <strong>
-                                        ${safeOpponent}
-                                    </strong>
-
-                                </p>
-
-
-                                <p>
-                                    ${date}
-                                </p>
-
-
-                                <a
-                                    href="${url}"
-                                    target="_blank"
-                                    rel="noopener"
-                                >
-
-                                    ${
-                                        isLive
-                                            ? "Watch / Join →"
-                                            : isFinished
-                                                ? "View Match →"
-                                                : "View Event →"
-                                    }
-
-                                </a>
-
-                            </div>
-
-                        </article>
-
-                    `;
-
-                }
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   MEMBER SEARCH
-========================================================= */
-
-memberSearch.addEventListener(
-    "input",
-    () => {
-
-        const query =
-            memberSearch.value
-                .trim()
-                .toLowerCase();
-
-
-        if (!query) {
-
-            renderMembers(
-                allMembers
-            );
-
-            return;
-
-        }
-
-
-        const filtered =
-            allMembers.filter(
-                username =>
-                    username
-                        .toLowerCase()
-                        .includes(query)
-            );
-
-
-        renderMembers(
-            filtered
-        );
-
-
-        memberResultText.textContent =
-            `${filtered.length} matching members.`;
+      }
+
+      renderMembers(
+        members.filter(
+          name =>
+            name
+              .toLowerCase()
+              .includes(query)
+        )
+      );
 
     }
-);
+  );
 
 
-/* =========================================================
+/* =========================
    REFRESH
-========================================================= */
+========================= */
 
-refreshButton.addEventListener(
+$("refreshBtn")
+  .addEventListener(
     "click",
     async () => {
 
-        refreshButton.disabled =
-            true;
+      const btn =
+        $("refreshBtn");
 
+      btn.disabled = true;
 
-        refreshButton.textContent =
-            "↻ Updating...";
+      btn.textContent =
+        "↻ Updating...";
 
+      await Promise.all([
+        loadClub(),
+        loadMembers(),
+        loadMatches()
+      ]);
 
-        await Promise.all([
+      btn.disabled = false;
 
-            loadClub(),
-
-            loadMembers(),
-
-            loadMatches()
-
-        ]);
-
-
-        refreshButton.disabled =
-            false;
-
-
-        refreshButton.textContent =
-            "↻ Refresh";
+      btn.textContent =
+        "↻ Refresh";
 
     }
-);
+  );
 
 
-/* =========================================================
+/* =========================
+   MOBILE
+========================= */
+
+$("menuBtn")
+  .addEventListener(
+    "click",
+    () => {
+
+      $("mobileMenu")
+        .classList
+        .toggle("open");
+
+    }
+  );
+
+
+/* =========================
    AUTO UPDATE
-========================================================= */
-
-const REFRESH_TIME =
-    30 * 60 * 1000;
-
+========================= */
 
 setInterval(
-    async () => {
+  () => {
 
-        console.log(
-            "♛ The Crown: automatic update"
-        );
+    loadClub();
+    loadMembers();
+    loadMatches();
 
-
-        await Promise.all([
-
-            loadClub(),
-
-            loadMembers(),
-
-            loadMatches()
-
-        ]);
-
-    },
-    REFRESH_TIME
+  },
+  30 * 60 * 1000
 );
 
 
-/* =========================================================
-   MOBILE MENU
-========================================================= */
-
-menuButton.addEventListener(
-    "click",
-    () => {
-
-        mobileMenu.classList.toggle(
-            "open"
-        );
-
-    }
-);
-
-
-document
-    .querySelectorAll(
-        ".mobile-menu a"
-    )
-    .forEach(
-        link => {
-
-            link.addEventListener(
-                "click",
-                () => {
-
-                    mobileMenu
-                        .classList
-                        .remove("open");
-
-                }
-            );
-
-        }
-    );
-
-
-/* =========================================================
-   ESCAPE
-========================================================= */
-
-document.addEventListener(
-    "keydown",
-    event => {
-
-        if (
-            event.key === "Escape"
-        ) {
-
-            mobileMenu
-                .classList
-                .remove("open");
-
-        }
-
-    }
-);
-
-
-/* =========================================================
+/* =========================
    YEAR
-========================================================= */
+========================= */
 
-currentYear.textContent =
-    new Date().getFullYear();
-
-
-/* =========================================================
-   INITIAL LOAD
-========================================================= */
-
-async function init() {
-
-    console.log(
-        "♛ The Crown Chess Society V2"
-    );
+$("year").textContent =
+  new Date().getFullYear();
 
 
-    await Promise.all([
+/* =========================
+   START
+========================= */
 
-        loadClub(),
-
-        loadMembers(),
-
-        loadMatches()
-
-    ]);
-
-}
-
-
-init();
+loadClub();
+loadMembers();
+loadMatches();
