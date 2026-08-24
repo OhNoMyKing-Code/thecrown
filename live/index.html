@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width,initial-scale=1.0"
+  >
+
+  <title>
+    Live Tournaments — The Crown
+  </title>
+
+  <link
+    rel="stylesheet"
+    href="../style.css"
+  >
+
+  <style>
+
+    .live-page {
+      min-height: 100vh;
+      padding-top: 110px;
+      padding-bottom: 80px;
+    }
+
+    .live-hero {
+      max-width: 900px;
+      margin: auto;
+      text-align: center;
+      padding: 50px 20px 35px;
+    }
+
+    .live-icon {
+      font-size: 60px;
+      color: #f4cf73;
+    }
+
+    .live-hero h1 {
+      margin-top: 15px;
+      font-family: Georgia,serif;
+      font-size: clamp(35px,6vw,60px);
+    }
+
+    .live-hero h1 span {
+      color: #f4cf73;
+    }
+
+    .live-hero p {
+      margin-top: 12px;
+      color: #9297a5;
+    }
+
+    .live-container {
+      max-width: 850px;
+      margin: auto;
+      padding: 0 20px;
+    }
+
+    .source-card {
+      padding: 18px;
+
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 15px;
+
+      background: #111522;
+    }
+
+    .source-tabs {
+      display: flex;
+      gap: 7px;
+
+      padding-bottom: 15px;
+
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+
+    .source-tab {
+      padding: 9px 13px;
+
+      border: 0;
+      border-radius: 8px;
+
+      background: #181d2b;
+
+      color: #aaa;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      cursor: pointer;
+    }
+
+    .source-tab.active {
+      background: #d9a441;
+      color: #111;
+    }
+
+    .source-panel {
+      padding-top: 18px;
+    }
+
+    .source-panel label {
+      display: block;
+
+      margin-bottom: 8px;
+
+      color: #9297a5;
+
+      font-size: 9px;
+      font-weight: 800;
+
+      letter-spacing: 1px;
+    }
+
+    .source-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .source-row input {
+      flex: 1;
+
+      height: 46px;
+
+      padding: 0 13px;
+
+      outline: none;
+
+      color: white;
+
+      background: #080b12;
+
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 9px;
+    }
+
+    .source-row button {
+      padding: 0 18px;
+
+      border: 0;
+      border-radius: 9px;
+
+      background: linear-gradient(
+        135deg,
+        #f2cc70,
+        #a66d1a
+      );
+
+      color: #111;
+
+      font-size: 10px;
+      font-weight: 900;
+
+      cursor: pointer;
+    }
+
+    .youtube-card {
+      margin-top: 15px;
+
+      padding: 20px;
+
+      border: 1px solid rgba(255,70,85,.25);
+      border-radius: 15px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,70,85,.09),
+          rgba(255,255,255,.02)
+        );
+    }
+
+    .youtube-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .youtube-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .youtube-logo {
+      width: 35px;
+      height: 25px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 7px;
+
+      background: #ff0000;
+
+      color: white;
+
+      font-size: 14px;
+    }
+
+    .youtube-live {
+      padding: 5px 8px;
+
+      border-radius: 20px;
+
+      color: white;
+
+      background: #ff4655;
+
+      font-size: 8px;
+      font-weight: 900;
+    }
+
+    .youtube-card p {
+      margin-top: 10px;
+
+      color: #9297a5;
+
+      font-size: 11px;
+    }
+
+    .youtube-card a {
+      display: inline-block;
+
+      margin-top: 14px;
+
+      padding: 10px 15px;
+
+      border-radius: 8px;
+
+      background: #ff0000;
+
+      color: white;
+
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+
+      margin-top: 30px;
+
+      padding: 5px;
+
+      border-radius: 12px;
+
+      background: #111522;
+
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .tab {
+      padding: 12px;
+
+      border: 0;
+
+      border-radius: 9px;
+
+      background: transparent;
+
+      color: #858a98;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: linear-gradient(
+        135deg,
+        #f2cc70,
+        #a66d1a
+      );
+
+      color: #111;
+    }
+
+    .tournament-title {
+      margin-top: 35px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      color: white;
+    }
+
+    .tournament-title h2 {
+      font-size: 17px;
+    }
+
+    .tournament-title span {
+      color: #9297a5;
+      font-size: 10px;
+    }
+
+    .tournament-list {
+      margin-top: 13px;
+
+      display: grid;
+      gap: 12px;
+    }
+
+    .tournament {
+      padding: 20px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+
+      background: #111522;
+    }
+
+    .tournament-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .tournament-icon {
+      width: 50px;
+      height: 50px;
+
+      display: grid;
+      place-items: center;
+
+      border-radius: 11px;
+
+      background: rgba(217,164,65,.1);
+
+      color: #f4cf73;
+
+      font-size: 22px;
+    }
+
+    .platform {
+      color: #9297a5;
+      font-size: 8px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .tournament h3 {
+      margin-top: 3px;
+      font-size: 14px;
+    }
+
+    .tournament p {
+      color: #777d8b;
+      font-size: 9px;
+    }
+
+    .watch {
+      padding: 9px 13px;
+
+      border-radius: 8px;
+
+      color: #f4cf73;
+
+      background: rgba(217,164,65,.08);
+
+      font-size: 9px;
+      font-weight: 900;
+    }
+
+    .empty {
+      padding: 50px 20px;
+
+      text-align: center;
+
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+
+      color: #777d8b;
+
+      background: #111522;
+    }
+
+    @media(max-width:600px) {
+
+      .source-tabs {
+        flex-wrap: wrap;
+      }
+
+      .source-row {
+        flex-direction: column;
+      }
+
+      .source-row button {
+        height: 45px;
+      }
+
+      .tournament {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .watch {
+        width: 100%;
+        text-align: center;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<header class="navbar">
+
+  <div class="nav-inner">
+
+    <a href="../" class="brand">
+
+      <div class="brand-logo">
+        ♛
+      </div>
+
+      <div>
+        <b>THE CROWN</b>
+        <small>CHESS SOCIETY</small>
+      </div>
+
+    </a>
+
+    <nav>
+
+      <a href="../">
+        Home
+      </a>
+
+      <a href="../#members">
+        Members
+      </a>
+
+      <a href="../#team">
+        Admins
+      </a>
+
+      <a href="../#matches">
+        Matches
+      </a>
+
+    </nav>
+
+    <a
+      href="https://www.chess.com/club/the-crown-chess-society"
+      target="_blank"
+      class="join-btn"
+    >
+      Join Club
+    </a>
+
+  </div>
+
+</header>
+
+
+<main class="live-page">
+
+  <section class="live-hero">
+
+    <div class="live-icon">
+      ♛
+    </div>
+
+    <h1>
+      Live Tournament
+      <span>Center</span>
+    </h1>
+
+    <p>
+      Theo dõi các giải đấu và hoạt động
+      trực tiếp của The Crown Chess Society.
+    </p>
+
+  </section>
+
+
+  <div class="live-container">
+
+
+    <section class="source-card">
+
+      <div class="source-tabs">
+
+        <button
+          class="source-tab active"
+          data-source="crown"
+        >
+          ♛ THE CROWN
+        </button>
+
+        <button
+          class="source-tab"
+          data-source="lichess"
+        >
+          ♞ LICHESS
+        </button>
+
+        <button
+          class="source-tab"
+          data-source="chess"
+        >
+          ♟ CHESS.COM
+        </button>
+
+      </div>
+
+
+      <div class="source-panel">
+
+        <label>
+          NỀN TẢNG / TOURNAMENT LINK
+        </label>
+
+        <div class="source-row">
+
+          <input
+            id="tournamentInput"
+            placeholder="Dán link hoặc ID giải đấu..."
+          >
+
+          <button id="openTournament">
+            🔗 MỞ GIẢI
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <section class="youtube-card">
+
+      <div class="youtube-top">
+
+        <div class="youtube-title">
+
+          <div class="youtube-logo">
+            ▶
+          </div>
+
+          YouTube Live — Đỗ Trọng Khánh
+
+        </div>
+
+        <span class="youtube-live">
+          LIVE
+        </span>
+
+      </div>
+
+      <p>
+        Kênh livestream chính thức dùng để phát
+        các giải đấu và hoạt động của The Crown.
+      </p>
+
+      <a
+        href="https://www.youtube.com/@dotrongkhanh2012/live"
+        target="_blank"
+      >
+        ▶ XEM YOUTUBE LIVE
+      </a>
+
+    </section>
+
+
+    <div class="tabs">
+
+      <button
+        class="tab active"
+        data-tab="live"
+      >
+        🔴 ĐANG DIỄN RA
+        <b id="liveTotal">0</b>
+      </button>
+
+      <button
+        class="tab"
+        data-tab="upcoming"
+      >
+        📅 SẮP DIỄN RA
+        <b id="upcomingTotal">0</b>
+      </button>
+
+      <button
+        class="tab"
+        data-tab="finished"
+      >
+        🏆 ĐÃ KẾT THÚC
+        <b id="finishedTotal">0</b>
+      </button>
+
+    </div>
+
+
+    <div class="tournament-title">
+
+      <h2>
+        ⚡ Giải đấu
+      </h2>
+
+      <span id="countText">
+        0 giải đấu
+      </span>
+
+    </div>
+
+
+    <div
+      id="tournamentList"
+      class="tournament-list"
+    >
+
+      <div class="empty">
+        Đang tải dữ liệu...
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+const MATCH_API =
+  "https://api.chess.com/pub/club/the-crown-chess-society/matches";
+
+let matchData = {
+  live: [],
+  upcoming: [],
+  finished: []
+};
+
+let currentTab = "live";
+
+
+const input =
+  document.getElementById(
+    "tournamentInput"
+  );
+
+
+const list =
+  document.getElementById(
+    "tournamentList"
+  );
+
+
+function getUsername(url) {
+
+  if (!url) return "Opponent";
+
+  try {
+
+    const u = new URL(url);
+
+    return u.pathname
+      .split("/")
+      .filter(Boolean)
+      .at(-1) || "Opponent";
+
+  } catch {
+
+    return "Opponent";
+
+  }
+
+}
+
+
+function render() {
+
+  const data =
+    matchData[currentTab];
+
+  document.getElementById(
+    "countText"
+  ).textContent =
+    `${data.length} giải đấu`;
+
+
+  if (!data.length) {
+
+    list.innerHTML = `
+      <div class="empty">
+        Hiện tại không có giải đấu
+        ${
+          currentTab === "live"
+            ? "đang diễn ra"
+            : currentTab === "upcoming"
+              ? "sắp diễn ra"
+              : "đã kết thúc gần đây"
+        }.
+        <br><br>
+        <a
+          href="https://www.chess.com/clubs/matches/open"
+          target="_blank"
+          style="color:#f4cf73"
+        >
+          Xem Chess.com →
+        </a>
+      </div>
+    `;
+
+    return;
+
+  }
+
+
+  list.innerHTML =
+    data.slice(0,12).map(match => {
+
+      const name =
+        match.name ||
+        "Club Match";
+
+      const opponent =
+        getUsername(
+          match.opponent
+        );
+
+      const url =
+        match.url ||
+        match["@id"] ||
+        "https://www.chess.com/clubs/matches/open";
+
+      const live =
+        currentTab === "live";
+
+
+      return `
+        <article class="tournament">
+
+          <div class="tournament-info">
+
+            <div class="tournament-icon">
+              ${live ? "⚡" : "♛"}
+            </div>
+
+            <div>
+
+              <div class="platform">
+                CHESS.COM
+              </div>
+
+              <h3>
+                ${name}
+              </h3>
+
+              <p>
+                ${
+                  live
+                    ? "ĐANG DIỄN RA"
+                    : currentTab === "upcoming"
+                      ? "SẮP DIỄN RA"
+                      : "ĐÃ KẾT THÚC"
+                }
+
+                ${
+                  opponent
+                    ? ` • ${opponent}`
+                    : ""
+                }
+
+              </p>
+
+            </div>
+
+          </div>
+
+          <a
+            href="${url}"
+            target="_blank"
+            class="watch"
+          >
+            ${live ? "⚡ XEM GIẢI" : "MỞ GIẢI →"}
+          </a>
+
+        </article>
+      `;
+
+    }).join("");
+
+}
+
+
+async function loadMatches() {
+
+  try {
+
+    const response =
+      await fetch(
+        MATCH_API,
+        {
+          cache: "no-store"
+        }
+      );
+
+    const data =
+      await response.json();
+
+
+    matchData = {
+
+      live:
+        data.in_progress || [],
+
+      upcoming:
+        data.registered || [],
+
+      finished:
+        data.finished || []
+
+    };
+
+
+    document.getElementById(
+      "liveTotal"
+    ).textContent =
+      matchData.live.length;
+
+
+    document.getElementById(
+      "upcomingTotal"
+    ).textContent =
+      matchData.upcoming.length;
+
+
+    document.getElementById(
+      "finishedTotal"
+    ).textContent =
+      matchData.finished.length;
+
+
+    render();
+
+  } catch {
+
+    list.innerHTML = `
+      <div class="empty">
+        Không thể kết nối Chess.com.
+        <br><br>
+        Hãy thử lại sau.
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* TABS */
+
+document
+  .querySelectorAll(".tab")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        document
+          .querySelectorAll(".tab")
+          .forEach(
+            x => x.classList.remove("active")
+          );
+
+        button.classList.add("active");
+
+        currentTab =
+          button.dataset.tab;
+
+        render();
+
+      }
+    );
+
+  });
+
+
+/* SOURCE */
+
+document
+  .querySelectorAll(".source-tab")
+  .forEach(button => {
+
+    button.addEventListener(
+      "click",
+      () => {
+
+        document
+          .querySelectorAll(".source-tab")
+          .forEach(
+            x => x.classList.remove("active")
+          );
+
+        button.classList.add("active");
+
+        const source =
+          button.dataset.source;
+
+        if (source === "lichess") {
+
+          input.placeholder =
+            "Dán link / ID giải Lichess...";
+
+        } else if (source === "chess") {
+
+          input.placeholder =
+            "Dán link / ID giải Chess.com...";
+
+        } else {
+
+          input.placeholder =
+            "Dán link hoặc ID giải đấu...";
+
+        }
+
+      }
+    );
+
+  });
+
+
+/* OPEN */
+
+document
+  .getElementById("openTournament")
+  .addEventListener(
+    "click",
+    () => {
+
+      let value =
+        input.value.trim();
+
+      if (!value) {
+
+        alert(
+          "Hãy nhập link hoặc ID giải đấu."
+        );
+
+        return;
+
+      }
+
+
+      /*
+       * Nếu người dùng nhập URL
+       * thì mở trực tiếp.
+       */
+
+      if (
+        value.startsWith("http://") ||
+        value.startsWith("https://")
+      ) {
+
+        window.open(
+          value,
+          "_blank"
+        );
+
+        return;
+
+      }
+
+
+      const source =
+        document
+          .querySelector(
+            ".source-tab.active"
+          )
+          .dataset.source;
+
+
+      if (source === "lichess") {
+
+        window.open(
+          `https://lichess.org/tournament/${encodeURIComponent(value)}`,
+          "_blank"
+        );
+
+      } else if (source === "chess") {
+
+        window.open(
+          `https://www.chess.com/tournament/${encodeURIComponent(value)}`,
+          "_blank"
+        );
+
+      } else {
+
+        window.open(
+          "https://www.chess.com/clubs/matches/open",
+          "_blank"
+        );
+
+      }
+
+    }
+  );
+
+
+loadMatches();
+
+
+setInterval(
+  loadMatches,
+  5 * 60 * 1000
+);
+
+</script>
+
+</body>
+</html>
